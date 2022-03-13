@@ -11,6 +11,8 @@
         private DateTime _resetTimestamp;
         private MatchState _matchState;
 
+        public MatchState MatchState => _matchState;
+
         public Team Team1 => _team1;
         public Team Team2 => _team2;
 
@@ -42,8 +44,12 @@
             {
                 var timeoutSeconds = _matchState.IsHidden ? HIDDEN_TIMEOUT : DEFAULT_TIMEOUT;
                 _resetTimestamp = DateTime.Now.AddSeconds(timeoutSeconds);
-            }
 
+                if (_matchState.TriggerLaunchGame)
+                {
+                    _owningGraph.TriggerLaunchGame(this);
+                }
+            }
         }
 
         internal void Tick()

@@ -31,21 +31,20 @@
                 <ControlTemplate TargetType="{x:Type controls:EdgeControl}">
                     <Grid>
                         <Path x:Name="PART_edgePath"
-                              Stroke="{Binding IsMatch, Converter={StaticResource EdgeColorConverter}}"
-                              StrokeThickness="3"
-                              ToolTip="{Binding State}" />
+                              Stroke="{Binding EdgeColor}"
+                              StrokeThickness="3" />
                         <controls:DefaultEdgePointer x:Name="PART_EdgePointerForTarget" NeedRotation="true" Visibility="{Binding IsMatch, Converter={StaticResource VisibilityConverter}}">
                             <Path Width="10"
                                   Height="10"
                                   Data="M0,0.5 L1,1 1,0"
-                                  Fill="Black"
+                                  Fill="{Binding TargetPointerColor}"
                                   Stretch="Uniform" />
                         </controls:DefaultEdgePointer>
                         <controls:DefaultEdgePointer x:Name="PART_EdgePointerForSource" NeedRotation="true" Visibility="{Binding IsMatch, Converter={StaticResource VisibilityConverter}}">
                             <Path Width="10"
                                   Height="10"
                                   Data="M0,0.5 L1,1 1,0"
-                                  Fill="Black"
+                                  Fill="{Binding SourcePointerColor}"
                                   Stretch="Uniform" />
                         </controls:DefaultEdgePointer>
                     </Grid>

@@ -71,6 +71,23 @@ namespace Fumbbl.Gamefinder.Model
             }
         }
 
+        internal void TriggerLaunchGame(Match match)
+        {
+            var coach1 = match.Team1.Coach;
+            var coach2 = match.Team2.Coach;
+
+            foreach (var team in coach1.GetTeams().Concat(coach2.GetTeams()))
+            {
+                foreach (var m in team.GetMatches())
+                {
+                    if (!m.Equals(match))
+                    {
+                        m.Act(TeamAction.Cancel);
+                    }
+                }
+            }
+        }
+
         public void AddTeam(Team team) => _eventQueue.Add(() => InternalAddTeam(team));
         public void RemoveTeam(Team team) => _eventQueue.Add(() => InternalRemoveTeam(team));
         public void AddCoach(Coach coach) => _eventQueue.Add(() => InternalAddCoach(coach));

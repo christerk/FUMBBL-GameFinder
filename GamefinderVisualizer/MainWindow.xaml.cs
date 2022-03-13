@@ -34,7 +34,7 @@ namespace GamefinderVisualizer
         Dictionary<Team, DataVertex> tLookup = new();
         Dictionary<Coach, DataVertex> cLookup = new();
         Dictionary<Match, DataEdge> mLookup = new();
-        private Rect viewportRect = new Rect(-350, -350, 700, 700);
+        private Rect viewportRect = new Rect(-400, -400, 800, 800);
 
 
         public MainWindow()
@@ -88,7 +88,7 @@ namespace GamefinderVisualizer
             if (match is not null)
             {
                 (var t1, var t2) = (match.Team1, match.Team2);
-                var edge = new DataEdge(tLookup[t1], tLookup[t2]) { IsMatch = true, State = "" };
+                var edge = new DataEdge(tLookup[t1], tLookup[t2]) { IsMatch = true, Match = match };
                 graph.AddEdge(edge);
             }
         }
@@ -116,7 +116,7 @@ namespace GamefinderVisualizer
 
                 var cVertex = cLookup[team.Coach];
                 cVertex.SortId = team.Id;
-                var edge = new DataEdge(cVertex, vertex) { IsMatch = false, State = "" };
+                var edge = new DataEdge(cVertex, vertex) { IsMatch = false, State = "", Match = null };
                 graph.AddEdge(edge);
             }
 
@@ -128,6 +128,8 @@ namespace GamefinderVisualizer
 
             if (coach is not null) {
                 graph.RemoveVertex(cLookup[coach]);
+                coaches.Remove(coach);
+                cLookup.Remove(coach);
             }
         }
 
@@ -138,6 +140,7 @@ namespace GamefinderVisualizer
             if (coach is not null)
             {
                 var vertex = new DataVertex() { SortId = 0, VType = DataVertex.VertexType.Coach, Label = coach.Name };
+                coaches.Add(coach);
                 graph.AddVertex(vertex);
                 cLookup.Add(coach, vertex);
             }
@@ -150,14 +153,14 @@ namespace GamefinderVisualizer
 
         private void Simulate()
         {
-            if (coaches.Count <= 5 && r.Next(0, 5) == 1)
+            var addCoach = coaches.Count < 5 || r.Next(0,20) == 0;
+            if (addCoach)
             {
                 cNum++;
                 Coach c = new Coach() { Id = cNum, Name = $"Coach {cNum}" };
-                coaches.Add(c);
                 _graph.AddCoach(c);
 
-                var numTeams = r.Next(1, 4);
+                var numTeams = r.Next(3, 6) / 2;
                 for (var i = 0; i < numTeams; i++)
                 {
                     tNum++;
@@ -166,15 +169,47 @@ namespace GamefinderVisualizer
                 }
             }
 
-            if (coaches.Count >= 5)
+            if (coaches.Count > 5)
             {
                 var removedCoach = coaches.First();
-                coaches.Remove(removedCoach);
                 _graph.RemoveCoach(removedCoach);
             }
 
-            foreach (var c in coaches)
+            foreach (var c in coaches.ToArray())
             {
+                var matches = _graph.GetMatches(c).ToArray();
+                if (matches.Length > 0)
+                {
+
+                    var launchedMatch = matches.FirstOrDefault(m => m.MatchState.TriggerLaunchGame);
+
+                    if (launchedMatch != null)
+                    {
+                        continue;
+                    }
+
+                    var match = matches[r.Next(matches.Length)];
+                    if (!match.MatchState.IsHidden)
+                    {
+                        var ownTeam = match.Team1.Coach.Equals(c) ? match.Team1 : match.Team2;
+
+                        if (!match.MatchState.IsDefault && r.Next(20) == -1)
+                        {
+                            match.Act(TeamAction.Cancel, ownTeam);
+                        }
+                        else
+                        {
+                            if (match.MatchState.TriggerStartDialog)
+                            {
+                                match.Act(TeamAction.Start, ownTeam);
+                            }
+                            else
+                            {
+                                match.Act(TeamAction.Accept, ownTeam);
+                            }
+                        }
+                    }
+                }
                 c.Ping();
             }
         }
