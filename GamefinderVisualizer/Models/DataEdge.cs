@@ -29,6 +29,11 @@ namespace GamefinderVisualizer.Models
                     return "Green";
                 }
 
+                if (Match?.MatchState.IsHidden ?? false)
+                {
+                    return "Red";
+                }
+
                 return "Black";
             }
         }

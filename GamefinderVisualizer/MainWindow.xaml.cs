@@ -139,7 +139,7 @@ namespace GamefinderVisualizer
 
             if (coach is not null)
             {
-                var vertex = new DataVertex() { SortId = 0, VType = DataVertex.VertexType.Coach, Label = coach.Name };
+                var vertex = new DataVertex() { SortId = 0, VType = DataVertex.VertexType.Coach, Coach = coach, Label = coach.Name };
                 coaches.Add(coach);
                 graph.AddVertex(vertex);
                 cLookup.Add(coach, vertex);
@@ -177,8 +177,8 @@ namespace GamefinderVisualizer
 
             foreach (var c in coaches.ToArray())
             {
-                var matches = _graph.GetMatches(c).ToArray();
-                if (matches.Length > 0)
+                var matches = _graph.GetMatches(c).ToList();
+                if (matches.Count > 0)
                 {
                     var launchedMatch = matches.FirstOrDefault(m => m.MatchState.TriggerLaunchGame);
 
@@ -187,12 +187,12 @@ namespace GamefinderVisualizer
                         continue;
                     }
 
-                    var match = matches[r.Next(matches.Length)];
+                    var match = matches[r.Next(matches.Count)];
                     if (!match.MatchState.IsHidden)
                     {
                         var ownTeam = match.Team1.Coach.Equals(c) ? match.Team1 : match.Team2;
 
-                        if (!match.MatchState.IsDefault && r.Next(20) == -1)
+                        if (!match.MatchState.IsDefault && r.Next(20) == 0)
                         {
                             match.Act(TeamAction.Cancel, ownTeam);
                         }

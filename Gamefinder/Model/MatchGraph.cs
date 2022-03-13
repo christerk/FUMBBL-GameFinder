@@ -76,6 +76,9 @@ namespace Fumbbl.Gamefinder.Model
             var coach1 = match.Team1.Coach;
             var coach2 = match.Team2.Coach;
 
+            coach1.Lock();
+            coach2.Lock();
+
             foreach (var team in coach1.GetTeams().Concat(coach2.GetTeams()))
             {
                 foreach (var m in team.GetMatches())
@@ -132,7 +135,7 @@ namespace Fumbbl.Gamefinder.Model
             TeamAdded?.Invoke(this, new TeamUpdatedArgs { Team = team });
             foreach (var opponent in _teams)
             {
-                if (team is not null && team.IsOpponentAllowed(opponent))
+                if (team is not null && team.IsOpponentAllowed(opponent) && !opponent.Coach.Locked)
                 {
                     var m = new Match(this, opponent, team);
                     Console.WriteLine($"Adding {m}");

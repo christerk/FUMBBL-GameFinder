@@ -9,6 +9,7 @@
         public bool IsTimedOut => (DateTime.Now - _lastEventTime).TotalSeconds > 4;
 
         public int Id { get; set; }
+        public bool Locked { get; private set; } = false;
 
         public Coach()
         {
@@ -33,6 +34,11 @@
         public override string ToString()
         {
             return $"Coach({Name})";
+        }
+
+        internal void Lock()
+        {
+            Locked = true;
         }
     }
 }
