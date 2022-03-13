@@ -126,7 +126,7 @@ namespace GamefinderVisualizer
         {
             Coach? coach = ((CoachUpdatedArgs)e).Coach;
 
-            if (coach is not null) {
+            if (coach is not null && cLookup.ContainsKey(coach)) {
                 graph.RemoveVertex(cLookup[coach]);
                 coaches.Remove(coach);
                 cLookup.Remove(coach);
@@ -180,7 +180,6 @@ namespace GamefinderVisualizer
                 var matches = _graph.GetMatches(c).ToArray();
                 if (matches.Length > 0)
                 {
-
                     var launchedMatch = matches.FirstOrDefault(m => m.MatchState.TriggerLaunchGame);
 
                     if (launchedMatch != null)

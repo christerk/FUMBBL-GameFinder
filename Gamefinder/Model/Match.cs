@@ -3,6 +3,7 @@
     public class Match
     {
         private const int DEFAULT_TIMEOUT = 30;
+        private const int LAUNCHED_TIMEOUT = 3;
         private const int HIDDEN_TIMEOUT = 120;
 
         private readonly MatchGraph _owningGraph;
@@ -42,7 +43,8 @@
 
             if (changed && action != TeamAction.Timeout)
             {
-                var timeoutSeconds = _matchState.IsHidden ? HIDDEN_TIMEOUT : DEFAULT_TIMEOUT;
+                var timeoutSeconds = GetTimeout(_matchState);
+
                 _resetTimestamp = DateTime.Now.AddSeconds(timeoutSeconds);
 
                 if (_matchState.TriggerLaunchGame)
@@ -52,11 +54,34 @@
             }
         }
 
+        private int GetTimeout(MatchState state)
+        {
+            if (state.IsHidden)
+            {
+                return HIDDEN_TIMEOUT;
+            }
+
+            if (state.TriggerLaunchGame)
+            {
+                return LAUNCHED_TIMEOUT;
+            }
+
+            return DEFAULT_TIMEOUT;
+        }
+
         internal void Tick()
         {
             if (DateTime.Now > _resetTimestamp)
             {
-                Act(TeamAction.Timeout);
+                if (_matchState.TriggerLaunchGame)
+                {
+                    _owningGraph.RemoveCoach(Team1.Coach);
+                    _owningGraph.RemoveCoach(Team2.Coach);
+                }
+                else
+                {
+                    Act(TeamAction.Timeout);
+                }
             }
         }
 
