@@ -1,8 +1,10 @@
-﻿namespace Fumbbl.Gamefinder.Model
+﻿using ConcurrentCollections;
+
+namespace Fumbbl.Gamefinder.Model
 {
     public class Coach
     {
-        public HashSet<Team> _teams;
+        public ConcurrentHashSet<Team> _teams;
         public DateTime _lastEventTime = DateTime.Now;
         public string Name { get; set; } = String.Empty;
 

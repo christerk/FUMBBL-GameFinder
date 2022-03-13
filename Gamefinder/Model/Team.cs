@@ -1,4 +1,6 @@
-﻿namespace Fumbbl.Gamefinder.Model
+﻿using ConcurrentCollections;
+
+namespace Fumbbl.Gamefinder.Model
 {
     public class Team
     {
@@ -6,13 +8,13 @@
         public string Name { get; set; } = string.Empty;
         public int Id { get; set; }
 
-        private readonly HashSet<Match> _matches;
+        private readonly ConcurrentHashSet<Match> _matches;
 
-        public Team(Coach coach)
+        public Team(MatchGraph graph, Coach coach)
         {
             Coach = coach;
             _matches = new();
-            Coach.Add(this);
+            graph.AddTeamToCoach(this, coach);
         }
 
         public void Add(Match m)
@@ -22,7 +24,7 @@
 
         public void Remove(Match m)
         {
-            _matches.Remove(m);
+            _matches.TryRemove(m);
         }
 
         internal bool IsOpponentAllowed(Team opponent)

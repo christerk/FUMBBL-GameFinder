@@ -1,4 +1,5 @@
 ﻿
+using ConcurrentCollections;
 using Fumbbl.Gamefinder.Model.Event;
 using System.Collections.Concurrent;
 
@@ -8,9 +9,9 @@ namespace Fumbbl.Gamefinder.Model
     {
         private readonly GamefinderModel _gameFinder;
         private readonly BlockingCollection<Action> _eventQueue;
-        private readonly HashSet<Team> _teams;
-        private readonly HashSet<Coach> _coaches;
-        private readonly HashSet<Match> _matches;
+        private readonly ConcurrentHashSet<Team> _teams;
+        private readonly ConcurrentHashSet<Coach> _coaches;
+        private readonly ConcurrentHashSet<Match> _matches;
 
         public event EventHandler? CoachAdded;
         public event EventHandler? CoachRemoved;
@@ -95,6 +96,7 @@ namespace Fumbbl.Gamefinder.Model
         public void RemoveTeam(Team team) => _eventQueue.Add(() => InternalRemoveTeam(team));
         public void AddCoach(Coach coach) => _eventQueue.Add(() => InternalAddCoach(coach));
         public void RemoveCoach(Coach coach) => _eventQueue.Add(() => InternalRemoveCoach(coach));
+        public void AddTeamToCoach(Team team, Coach coach) => _eventQueue.Add(() => InternalAddTeamToCoach(team, coach));
 
         public IEnumerable<Team> GetTeams()
         {
@@ -161,12 +163,12 @@ namespace Fumbbl.Gamefinder.Model
                 {
                     Console.WriteLine($"Removing {match}");
                     t.Remove(match);
-                    _matches.Remove(match);
+                    _matches.TryRemove(match);
                     MatchRemoved?.Invoke(this, new MatchUpdatedArgs { Match = match });
 
                 }
             }
-            _teams.Remove(team);
+            _teams.TryRemove(team);
             TeamRemoved?.Invoke(this, new TeamUpdatedArgs { Team = team });
         }
 
@@ -193,8 +195,15 @@ namespace Fumbbl.Gamefinder.Model
             {
                 InternalRemoveTeam(team);
             }
-            _coaches.Remove(coach);
+            _coaches.TryRemove(coach);
             CoachRemoved?.Invoke(this, new CoachUpdatedArgs { Coach = coach });
         }
+
+        private void InternalAddTeamToCoach(Team team, Coach coach)
+        {
+            coach.Add(team);
+        }
+
+
     }
 }

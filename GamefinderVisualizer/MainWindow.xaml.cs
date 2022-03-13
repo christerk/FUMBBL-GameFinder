@@ -153,7 +153,8 @@ namespace GamefinderVisualizer
 
         private void Simulate()
         {
-            var addCoach = coaches.Count < 5 || r.Next(0,20) == 0;
+            var maxCoaches = 7;
+            var addCoach = coaches.Count < maxCoaches || r.Next(0,20) == 0;
             if (addCoach)
             {
                 cNum++;
@@ -164,12 +165,12 @@ namespace GamefinderVisualizer
                 for (var i = 0; i < numTeams; i++)
                 {
                     tNum++;
-                    Team t = new Team(c) { Id = tNum, Name = $"Team {tNum}" };
+                    Team t = new Team(_graph, c) { Id = tNum, Name = $"Team {tNum}" };
                     _graph.AddTeam(t);
                 }
             }
 
-            if (coaches.Count > 5)
+            if (coaches.Count > maxCoaches)
             {
                 var removedCoach = coaches.First();
                 _graph.RemoveCoach(removedCoach);
@@ -180,7 +181,7 @@ namespace GamefinderVisualizer
                 var matches = _graph.GetMatches(c).ToList();
                 if (matches.Count > 0)
                 {
-                    var launchedMatch = matches.FirstOrDefault(m => m.MatchState.TriggerLaunchGame);
+                    var launchedMatch = matches.FirstOrDefault(m => m?.MatchState?.TriggerLaunchGame ?? false);
 
                     if (launchedMatch != null)
                     {
