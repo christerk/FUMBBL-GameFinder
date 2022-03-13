@@ -1,3 +1,5 @@
+using Fumbbl.Api;
+using Fumbbl.Gamefinder.Model;
 using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -8,6 +10,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddFumbbl();
+builder.Services.AddSingleton<GamefinderModel>();
 
 var app = builder.Build();
 

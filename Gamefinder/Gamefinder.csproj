@@ -4,14 +4,21 @@
     <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Fumbbl.Gamefinder</RootNamespace>
+    <UserSecretsId>28db7e46-b1f0-4c50-b403-0741b5945122</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.3.0" />
+    <PackageReference Include="System.Collections.Concurrent" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\FumbblApi\FumbblApi\FumbblApi.csproj" />
   </ItemGroup>
 
   <Target Name="AfterPublish" AfterTargets="Publish">
-	  <Message Importance="High" Text="publish message 1"/>
+	  <Message Importance="High" Text="publish message 1" />
   </Target>
 
 </Project>
