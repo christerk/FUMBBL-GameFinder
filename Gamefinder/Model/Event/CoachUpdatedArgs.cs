@@ -1,4 +1,4 @@
-﻿namespace Fumbbl.Gamefinder.Model
+﻿namespace Fumbbl.Gamefinder.Model.Event
 {
     public class CoachUpdatedArgs : EventArgs
     {

@@ -1,4 +1,5 @@
 ﻿using Fumbbl.Gamefinder.Model;
+using Fumbbl.Gamefinder.Model.Event;
 using GamefinderVisualizer.Models;
 using GraphX.Common.Enums;
 using GraphX.Controls;

@@ -1,4 +1,5 @@
 ﻿
+using Fumbbl.Gamefinder.Model.Event;
 using System.Collections.Concurrent;
 
 namespace Fumbbl.Gamefinder.Model
