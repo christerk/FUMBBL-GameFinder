@@ -13,6 +13,7 @@
         private readonly MatchState _matchState;
 
         public MatchState MatchState => _matchState;
+        public MatchGraph Graph => _owningGraph;
 
         public Team Team1 => _team1;
         public Team Team2 => _team2;
@@ -28,6 +29,11 @@
         }
 
         public void Act(TeamAction action, Team? team = default)
+        {
+            _owningGraph.Dispatch(() => InternalAct(action, team));
+        }
+
+        private void InternalAct(TeamAction action, Team? team)
         {
             var activeDialog = _owningGraph.IsDialogActive(this);
             int teamNumber = _team1.Equals(team) ? 1 : 2;
@@ -47,24 +53,24 @@
                 return;
             }
 
-            var changed = _matchState.Act(matchAction);
+            var changed = _matchState.Act(this, matchAction);
 
             if (changed && action != TeamAction.Timeout)
             {
                 var timeoutSeconds = GetTimeout(_matchState);
 
                 _resetTimestamp = DateTime.Now.AddSeconds(timeoutSeconds);
-
-                if (_matchState.TriggerStartDialog)
-                {
-                    _owningGraph.TriggerStartDialog(this);
-                }
-
-                if (_matchState.TriggerLaunchGame)
-                {
-                    _owningGraph.TriggerLaunchGame(this);
-                }
             }
+        }
+
+        public void TriggerStartDialog()
+        {
+            _owningGraph.TriggerStartDialog(this);
+        }
+
+        public void TriggerLaunchGame()
+        {
+            _owningGraph.TriggerLaunchGame(this);
         }
 
         private static int GetTimeout(MatchState state)
@@ -120,5 +126,20 @@
             }
             return default;
         }
+        public bool Equals(Match? other)
+        {
+            return other is not null && this._team1.Equals(other._team1) && this._team2.Equals(other._team2);
+        }
+
+        public override bool Equals(object? other)
+        {
+            return other is not null && other is Match && Equals((Match)other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine("Match", _team1, _team2);
+        }
+
     }
 }

@@ -1,4 +1,6 @@
-﻿namespace Fumbbl.Gamefinder.Model
+﻿using System;
+
+namespace Fumbbl.Gamefinder.Model
 {
     public class MatchState
     {
@@ -18,24 +20,28 @@
 
         public bool IsDefault => State1 == TeamState.Default && State2 == TeamState.Default;
 
-        public bool Act(MatchAction action) {
-            (TeamState new1, TeamState new2) = (State1, State2, action) switch
+        private Action? ClearDialog(Match match) => () => match.Graph.ClearDialog(match);
+        private Action? TriggerStart(Match match) => () => match.Graph.TriggerStartDialog(match);
+        private Action? TriggerLaunch(Match match) => () => match.Graph.TriggerLaunchGame(match);
+
+        public bool Act(Match match, MatchAction action) {
+            (TeamState new1, TeamState new2, Action? trigger) = (State1, State2, action) switch
             {
-                (_, _, MatchAction.Timeout) => (TeamState.Default, TeamState.Default),
-                (TeamState.Hidden, TeamState.Hidden, _) => (TeamState.Hidden, TeamState.Hidden),
-                (_, _, MatchAction.Cancel) => (TeamState.Hidden, TeamState.Hidden),
+                (_, _, MatchAction.Timeout) => (TeamState.Default, TeamState.Default, ClearDialog(match)),
+                (TeamState.Hidden, TeamState.Hidden, _) => (TeamState.Hidden, TeamState.Hidden, null), // Stop pattern matching
+                (_, _, MatchAction.Cancel) => (TeamState.Hidden, TeamState.Hidden, ClearDialog(match)),
 
-                (TeamState.Default, TeamState.Default, MatchAction.Accept1) => (TeamState.Accept, TeamState.Default),
-                (TeamState.Default, TeamState.Default, MatchAction.Accept2) => (TeamState.Default, TeamState.Accept),
-                (TeamState.Accept, TeamState.Default, MatchAction.Accept2) => (TeamState.Accept, TeamState.Accept),
-                (TeamState.Default, TeamState.Accept, MatchAction.Accept1) => (TeamState.Accept, TeamState.Accept),
+                (TeamState.Default, TeamState.Default, MatchAction.Accept1) => (TeamState.Accept, TeamState.Default, null),
+                (TeamState.Default, TeamState.Default, MatchAction.Accept2) => (TeamState.Default, TeamState.Accept, null),
+                (TeamState.Accept, TeamState.Default, MatchAction.Accept2) => (TeamState.Accept, TeamState.Accept, TriggerStart(match)),
+                (TeamState.Default, TeamState.Accept, MatchAction.Accept1) => (TeamState.Accept, TeamState.Accept, TriggerStart(match)),
 
-                (TeamState.Accept, TeamState.Accept, MatchAction.Start1) => (TeamState.Start, TeamState.Accept), 
-                (TeamState.Accept, TeamState.Accept, MatchAction.Start2) => (TeamState.Accept, TeamState.Start),
-                (TeamState.Start, TeamState.Accept, MatchAction.Start2) => (TeamState.Start, TeamState.Start),
-                (TeamState.Accept, TeamState.Start, MatchAction.Start1) => (TeamState.Start, TeamState.Start),
+                (TeamState.Accept, TeamState.Accept, MatchAction.Start1) => (TeamState.Start, TeamState.Accept, null), 
+                (TeamState.Accept, TeamState.Accept, MatchAction.Start2) => (TeamState.Accept, TeamState.Start, null),
+                (TeamState.Start, TeamState.Accept, MatchAction.Start2) => (TeamState.Start, TeamState.Start, TriggerLaunch(match)),
+                (TeamState.Accept, TeamState.Start, MatchAction.Start1) => (TeamState.Start, TeamState.Start, TriggerLaunch(match)),
 
-                (_, _, _) => (State1, State2)
+                (_, _, _) => (State1, State2, null)
             };
 
             if ((State1, State2) == (new1, new2))
@@ -44,6 +50,8 @@
             }
 
             (State1, State2) = (new1, new2);
+
+            trigger?.Invoke();
 
             return true;
         }

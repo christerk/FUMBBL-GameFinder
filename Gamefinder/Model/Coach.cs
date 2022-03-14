@@ -2,7 +2,7 @@
 
 namespace Fumbbl.Gamefinder.Model
 {
-    public class Coach
+    public class Coach : IEquatable<Coach>
     {
         public ConcurrentHashSet<Team> _teams;
         public DateTime _lastEventTime = DateTime.Now;
@@ -46,6 +46,21 @@ namespace Fumbbl.Gamefinder.Model
         internal void Unlock()
         {
             Locked = false;
+        }
+
+        public bool Equals(Coach? other)
+        {
+            return other is not null && this.Id == other.Id;
+        }
+
+        public override bool Equals(object? other)
+        {
+            return other is not null && other is Coach && Equals((Coach)other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine("Coach", Id);
         }
     }
 }

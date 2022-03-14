@@ -41,5 +41,20 @@ namespace Fumbbl.Gamefinder.Model
         {
             return $"Team({Name})";
         }
+
+        public bool Equals(Team? other)
+        {
+            return other is not null && this.Id == other.Id;
+        }
+
+        public override bool Equals(object? other)
+        {
+            return other is not null && other is Team && Equals((Team)other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine("Match", Id);
+        }
     }
 }

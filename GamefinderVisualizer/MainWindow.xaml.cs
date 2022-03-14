@@ -64,8 +64,7 @@ namespace GamefinderVisualizer
 
             if (coaches.Count > maxCoaches)
             {
-                var removedCoach = coaches.First();
-                _graph.RemoveCoach(removedCoach);
+                _graph.RemoveCoach(coaches.First());
             }
 
             foreach (var c in coaches.ToArray())

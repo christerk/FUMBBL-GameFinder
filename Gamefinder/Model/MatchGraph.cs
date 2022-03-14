@@ -41,22 +41,22 @@ namespace Fumbbl.Gamefinder.Model
                 var lastTick = DateTime.Now;
                 while (!_eventQueue.IsAddingCompleted)
                 {
-                    if (_eventQueue.TryTake(out Action? action, TimeSpan.FromSeconds(1)))
+                    try
                     {
-                        try
+                        if (_eventQueue.TryTake(out Action? action, TimeSpan.FromSeconds(1)))
                         {
                             action.Invoke();
                         }
-                        catch { }
-                    }
-                    if ((DateTime.Now - lastTick).TotalMilliseconds > 1000)
-                    {
-                        try
+                        if ((DateTime.Now - lastTick).TotalMilliseconds > 1000)
                         {
                             Tick();
+                            lastTick = DateTime.Now;
                             GraphUpdated?.Invoke((object)this, EventArgs.Empty);
                         }
-                        catch { }
+                    }
+                    catch (Exception e)
+                    {
+                        Console.WriteLine(e.Message);
                     }
                 }
                 Console.WriteLine($"MatchGraph Task Ending");
@@ -86,6 +86,8 @@ namespace Fumbbl.Gamefinder.Model
             }
         }
 
+        public void Dispatch(Action action) => _eventQueue.Add(action);
+
         public void AddTeam(Team team) => _eventQueue.Add(() => InternalAddTeam(team));
         public void RemoveTeam(Team team) => _eventQueue.Add(() => InternalRemoveTeam(team));
         public void AddCoach(Coach coach) => _eventQueue.Add(() => InternalAddCoach(coach));
@@ -93,18 +95,20 @@ namespace Fumbbl.Gamefinder.Model
         public void AddTeamToCoach(Team team, Coach coach) => _eventQueue.Add(() => InternalAddTeamToCoach(team, coach));
         public async Task<List<Match>> GetMatchesAsync(Coach coach) => await Serialized<Coach, List<Match>>(InternalGetMatches, coach);
         public async Task<List<Match>> GetMatches() => await Serialized<List<Match>>(InternalGetMatches);
-        public void TriggerLaunchGame(Match match) => _eventQueue.Add(() => InternalTriggerLaunchGame(match));
-        public void TriggerStartDialog(Match match) => _eventQueue.Add(() => InternalTriggerStartDialog(match));
         public async Task<List<Team>> GetTeams() => await Serialized<List<Team>>(InternalGetTeams);
         public async Task<Match?> GetMatch(Team team1, Team team2) => await Serialized<Team, Team, Match?>(InternalGetMatch, team1, team2);
+        public void TriggerLaunchGame(Match match) => _eventQueue.Add(() => InternalTriggerLaunchGame(match));
+        public void TriggerStartDialog(Match match) => _eventQueue.Add(() => InternalTriggerStartDialog(match));
+        public void ClearDialog(Match match) => _eventQueue.Add(() => InternalClearDialog(match));
+
+        internal void InternalClearDialog(Match match)
+        {
+            _dialogManager.Remove(match);
+        }
 
         private void InternalTriggerStartDialog(Match match)
         {
-            Coach c1 = match.Team1.Coach;
-            Coach c2 = match.Team2.Coach;
-            var active = !_dialogManager.HasDialog(c1, c2);
-
-            _dialogManager.Add(match, c1, c2, active);
+            _dialogManager.Add(match);
         }
 
         private void InternalTriggerLaunchGame(Match match)

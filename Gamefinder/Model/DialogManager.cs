@@ -5,10 +5,12 @@ namespace Fumbbl.Gamefinder.Model
     internal class DialogManager
     {
         private readonly ConcurrentDictionary<Match, StartDialog> _startDialogs;
+        private HashSet<Coach> _activeCoaches;
 
         public DialogManager()
         {
             _startDialogs = new();
+            _activeCoaches = new();
         }
 
         internal bool IsDialogActive(Match match)
@@ -25,36 +27,54 @@ namespace Fumbbl.Gamefinder.Model
             return _startDialogs.Values.Any(d => d.Coach1 == c1 || d.Coach1 == c2 || d.Coach2 == c1 || d.Coach2 == c2);
         }
 
-        internal void Add(Match match, Coach c1, Coach c2, bool active)
+        internal void Add(Match match)
         {
-            _startDialogs.TryAdd(match, new StartDialog() { Match = match, Coach1 = c1, Coach2 = c2, Active = active });
+            _startDialogs.TryAdd(match, new StartDialog(match));
+            Rescan();
         }
 
         public void Rescan()
         {
-            HashSet<Coach> coaches = new();
             foreach (var d in _startDialogs.Values)
             {
-                if (d.Coach1 is not null && d.Coach2 is not null)
+                if (!d.Active && !_activeCoaches.Contains(d.Coach1) && !_activeCoaches.Contains(d.Coach2))
                 {
-                    if (!d.Active && !coaches.Contains(d.Coach1) && !coaches.Contains(d.Coach2))
-                    {
-                        d.Active = true;
-                    }
-                    if (d.Active)
-                    {
-                        coaches.Add(d.Coach1);
-                        coaches.Add(d.Coach2);
-                    }
+                    Verify(d.Coach1, d.Coach2);
+                    d.Active = true;
+                    _activeCoaches.Add(d.Coach1);
+                    _activeCoaches.Add(d.Coach2);
                 }
             }
         }
 
-        internal void Remove(Match match)
+        private void Verify(Coach c1, Coach c2)
         {
-            if (_startDialogs.TryRemove(match, out _))
+            var error = _startDialogs.Values.Any(
+                d =>
+                    (d.Coach1.Equals(c1) || d.Coach2.Equals(c1) || d.Coach1.Equals(c2) || d.Coach2.Equals(c2))
+                    &&
+                    d.Active
+            );
+
+            if (error)
             {
-                Rescan();
+
+            }    
+        }
+
+        internal void Remove(Match match, bool rescan = true)
+        {
+            if (_startDialogs.TryRemove(match, out var dialog))
+            {
+                if (dialog.Active)
+                {
+                    _activeCoaches.Remove(match.Team1.Coach);
+                    _activeCoaches.Remove(match.Team2.Coach);
+                }
+                if (rescan)
+                {
+                    Rescan();
+                }
             }
         }
 
@@ -65,7 +85,10 @@ namespace Fumbbl.Gamefinder.Model
             {
                 foreach (var dialog in dialogs)
                 {
-                    _startDialogs.Remove(dialog.Key, out _);
+                    if (_startDialogs.TryRemove(dialog.Key, out _))
+                    {
+                        Remove(dialog.Key, false);
+                    }
                 }
                 Rescan();
             }
@@ -79,7 +102,7 @@ namespace Fumbbl.Gamefinder.Model
                 foreach (var dialog in dialogs)
                 {
                     Unlock(dialog.Key);
-                    _startDialogs.Remove(dialog.Key, out _);
+                    Remove(dialog.Key, false);
                 }
                 Rescan();
             }
