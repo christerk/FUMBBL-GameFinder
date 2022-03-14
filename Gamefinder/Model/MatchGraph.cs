@@ -135,7 +135,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalGetTeams(TaskCompletionSource<List<Team>> result)
             => result.SetResult(new List<Team>(_teams));
-        
+
         private void InternalGetMatches(TaskCompletionSource<List<Match>> result)
             => result.SetResult(new List<Match>(_matches));
 

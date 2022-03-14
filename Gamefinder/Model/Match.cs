@@ -41,13 +41,13 @@
             {
                 (TeamAction.Timeout, _, _) => MatchAction.Timeout,
                 (TeamAction.Cancel, _, _) => MatchAction.Cancel,
-                (TeamAction.Accept, 1, _) =>  MatchAction.Accept1,
+                (TeamAction.Accept, 1, _) => MatchAction.Accept1,
                 (TeamAction.Accept, 2, _) => MatchAction.Accept2,
                 (TeamAction.Start, 1, true) => MatchAction.Start1,
                 (TeamAction.Start, 2, true) => MatchAction.Start2,
                 (_, _, _) => MatchAction.None
             };
-            
+
             if (matchAction == MatchAction.None)
             {
                 return;
@@ -133,7 +133,7 @@
 
         public override bool Equals(object? other)
         {
-            return other is not null && other is Match && Equals((Match)other);
+            return other is not null && other is Match match && Equals(match);
         }
 
         public override int GetHashCode()

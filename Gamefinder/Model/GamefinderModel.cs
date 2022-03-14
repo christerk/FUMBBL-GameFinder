@@ -3,7 +3,8 @@
     public class GamefinderModel
     {
         private int _counter = 0;
-        public int Counter {
+        public int Counter
+        {
             get
             {
                 _counter++;

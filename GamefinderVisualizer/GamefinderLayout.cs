@@ -1,6 +1,5 @@
 ﻿using GamefinderVisualizer.Models;
 using GraphX.Common.Enums;
-using GraphX.Common.Interfaces;
 using GraphX.Logic.Algorithms.LayoutAlgorithms;
 using GraphX.Measure;
 using QuickGraph;

@@ -5,7 +5,7 @@ namespace Fumbbl.Gamefinder.Model
     internal class DialogManager
     {
         private readonly ConcurrentDictionary<Match, StartDialog> _startDialogs;
-        private HashSet<Coach> _activeCoaches;
+        private readonly HashSet<Coach> _activeCoaches;
 
         public DialogManager()
         {
@@ -59,7 +59,7 @@ namespace Fumbbl.Gamefinder.Model
             if (error)
             {
 
-            }    
+            }
         }
 
         internal void Remove(Match match, bool rescan = true)

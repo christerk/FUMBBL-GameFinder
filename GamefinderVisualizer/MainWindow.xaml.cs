@@ -46,7 +46,7 @@ namespace GamefinderVisualizer
         private async Task Simulate()
         {
             var maxCoaches = 5;
-            var addCoach = coaches.Count < maxCoaches || r.Next(0,20) == 0;
+            var addCoach = coaches.Count < maxCoaches || r.Next(0, 20) == 0;
             if (addCoach)
             {
                 cNum++;
@@ -124,7 +124,7 @@ namespace GamefinderVisualizer
 
             Task.Run(async () =>
             {
-                while(true)
+                while (true)
                 {
                     Thread.Sleep(1000);
                     await Simulate();
@@ -138,7 +138,7 @@ namespace GamefinderVisualizer
 
             logicCore.DefaultLayoutAlgorithm = LayoutAlgorithmTypeEnum.Circular;
             logicCore.DefaultLayoutAlgorithmParams = logicCore.AlgorithmFactory.CreateLayoutParameters(LayoutAlgorithmTypeEnum.Circular);
-            
+
             logicCore.DefaultOverlapRemovalAlgorithm = OverlapRemovalAlgorithmTypeEnum.FSA;
             logicCore.DefaultOverlapRemovalAlgorithmParams.HorizontalGap = 300;
             logicCore.DefaultOverlapRemovalAlgorithmParams.VerticalGap = 300;

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Fumbbl.Gamefinder.Model
+﻿namespace Fumbbl.Gamefinder.Model
 {
     public class MatchState
     {
@@ -20,11 +18,12 @@ namespace Fumbbl.Gamefinder.Model
 
         public bool IsDefault => State1 == TeamState.Default && State2 == TeamState.Default;
 
-        private Action? ClearDialog(Match match) => () => match.Graph.ClearDialog(match);
-        private Action? TriggerStart(Match match) => () => match.Graph.TriggerStartDialog(match);
-        private Action? TriggerLaunch(Match match) => () => match.Graph.TriggerLaunchGame(match);
+        private static Action? ClearDialog(Match match) => () => match.Graph.ClearDialog(match);
+        private static Action? TriggerStart(Match match) => () => match.Graph.TriggerStartDialog(match);
+        private static Action? TriggerLaunch(Match match) => () => match.Graph.TriggerLaunchGame(match);
 
-        public bool Act(Match match, MatchAction action) {
+        public bool Act(Match match, MatchAction action)
+        {
             (TeamState new1, TeamState new2, Action? trigger) = (State1, State2, action) switch
             {
                 (_, _, MatchAction.Timeout) => (TeamState.Default, TeamState.Default, ClearDialog(match)),
@@ -36,7 +35,7 @@ namespace Fumbbl.Gamefinder.Model
                 (TeamState.Accept, TeamState.Default, MatchAction.Accept2) => (TeamState.Accept, TeamState.Accept, TriggerStart(match)),
                 (TeamState.Default, TeamState.Accept, MatchAction.Accept1) => (TeamState.Accept, TeamState.Accept, TriggerStart(match)),
 
-                (TeamState.Accept, TeamState.Accept, MatchAction.Start1) => (TeamState.Start, TeamState.Accept, null), 
+                (TeamState.Accept, TeamState.Accept, MatchAction.Start1) => (TeamState.Start, TeamState.Accept, null),
                 (TeamState.Accept, TeamState.Accept, MatchAction.Start2) => (TeamState.Accept, TeamState.Start, null),
                 (TeamState.Start, TeamState.Accept, MatchAction.Start2) => (TeamState.Start, TeamState.Start, TriggerLaunch(match)),
                 (TeamState.Accept, TeamState.Start, MatchAction.Start1) => (TeamState.Start, TeamState.Start, TriggerLaunch(match)),

@@ -49,7 +49,7 @@ namespace Fumbbl.Gamefinder.Model
 
         public override bool Equals(object? other)
         {
-            return other is not null && other is Team && Equals((Team)other);
+            return other is not null && other is Team team && Equals(team);
         }
 
         public override int GetHashCode()

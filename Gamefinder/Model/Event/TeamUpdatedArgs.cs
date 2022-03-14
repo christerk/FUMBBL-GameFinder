@@ -2,6 +2,6 @@
 {
     public class TeamUpdatedArgs : EventArgs
     {
-        public Team? Team{ get; set; }
+        public Team? Team { get; set; }
     }
 }

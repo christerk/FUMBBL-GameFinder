@@ -55,7 +55,7 @@ namespace Fumbbl.Gamefinder.Model
 
         public override bool Equals(object? other)
         {
-            return other is not null && other is Coach && Equals((Coach)other);
+            return other is not null && other is Coach coach && Equals(coach);
         }
 
         public override int GetHashCode()

@@ -1,6 +1,5 @@
 using Fumbbl.Api;
 using Fumbbl.Gamefinder.Model;
-using Microsoft.AspNetCore.Builder;
 
 var builder = WebApplication.CreateBuilder(args);
 

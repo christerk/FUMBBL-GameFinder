@@ -1,7 +1,5 @@
 ﻿using Fumbbl.Gamefinder.Model;
 using GraphX.Common.Models;
-using System;
-using System.Drawing;
 
 namespace GamefinderVisualizer.Models
 {
@@ -11,7 +9,8 @@ namespace GamefinderVisualizer.Models
         public Match? Match { get; set; }
         public bool IsMatch { get; set; }
 
-        public string EdgeColor {
+        public string EdgeColor
+        {
             get
             {
                 if (!IsMatch)
