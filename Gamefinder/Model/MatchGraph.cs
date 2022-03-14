@@ -192,6 +192,11 @@ namespace Fumbbl.Gamefinder.Model
                     Console.WriteLine($"Removing {match}");
                     t.Remove(match);
                     _matches.TryRemove(match);
+                    if (match.MatchState.TriggerLaunchGame)
+                    {
+                        match.Team1.Coach.Unlock();
+                        match.Team2.Coach.Unlock();
+                    }
 
                     _dialogManager.Remove(match);
                     MatchRemoved?.Invoke(this, new MatchUpdatedArgs { Match = match });
@@ -237,25 +242,25 @@ namespace Fumbbl.Gamefinder.Model
         }
 
         #region Serialized() helper methods
-        private async Task<T> Serialized<T>(Action<TaskCompletionSource<T>> func)
+        private Task<T> Serialized<T>(Action<TaskCompletionSource<T>> func)
         {
-            TaskCompletionSource<T> result = new();
+            TaskCompletionSource<T> result = new(TaskCreationOptions.RunContinuationsAsynchronously);
             _eventQueue.Add(() => func(result));
-            return await result.Task;
+            return result.Task;
         }
 
-        private async Task<T> Serialized<P, T>(Action<P, TaskCompletionSource<T>> func, P param)
+        private Task<T> Serialized<P, T>(Action<P, TaskCompletionSource<T>> func, P param)
         {
-            TaskCompletionSource<T> result = new();
+            TaskCompletionSource<T> result = new(TaskCreationOptions.RunContinuationsAsynchronously);
             _eventQueue.Add(() => func(param, result));
-            return await result.Task;
+            return result.Task;
         }
 
-        private async Task<T> Serialized<P1, P2, T>(Action<P1, P2, TaskCompletionSource<T>> func, P1 param1, P2 param2)
+        private Task<T> Serialized<P1, P2, T>(Action<P1, P2, TaskCompletionSource<T>> func, P1 param1, P2 param2)
         {
-            TaskCompletionSource<T> result = new();
+            TaskCompletionSource<T> result = new(TaskCreationOptions.RunContinuationsAsynchronously);
             _eventQueue.Add(() => func(param1, param2, result));
-            return await result.Task;
+            return result.Task;
         }
         #endregion
     }
