@@ -3,23 +3,12 @@ using Fumbbl.Gamefinder.Model.Event;
 using GamefinderVisualizer.Models;
 using GraphX.Common.Enums;
 using GraphX.Controls;
-using GraphX.Logic.Algorithms.LayoutAlgorithms;
-using QuickGraph;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace GamefinderVisualizer
 {
@@ -244,7 +233,7 @@ namespace GamefinderVisualizer
             logicCore.DefaultOverlapRemovalAlgorithm = OverlapRemovalAlgorithmTypeEnum.FSA;
             logicCore.DefaultOverlapRemovalAlgorithmParams.HorizontalGap = 300;
             logicCore.DefaultOverlapRemovalAlgorithmParams.VerticalGap = 300;
-            logicCore.DefaultEdgeRoutingAlgorithm = EdgeRoutingAlgorithmTypeEnum.SimpleER;
+            logicCore.DefaultEdgeRoutingAlgorithm = EdgeRoutingAlgorithmTypeEnum.None;
             logicCore.AsyncAlgorithmCompute = false;
 
             var vertexPositions = new Dictionary<DataVertex, GraphX.Measure.Point>();

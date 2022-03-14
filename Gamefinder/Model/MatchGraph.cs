@@ -43,12 +43,20 @@ namespace Fumbbl.Gamefinder.Model
                 {
                     if (_eventQueue.TryTake(out Action? action, TimeSpan.FromSeconds(1)))
                     {
-                        action.Invoke();
+                        try
+                        {
+                            action.Invoke();
+                        }
+                        catch { }
                     }
                     if ((DateTime.Now - lastTick).TotalMilliseconds > 1000)
                     {
-                        Tick();
-                        GraphUpdated?.Invoke((object)this, EventArgs.Empty);
+                        try
+                        {
+                            Tick();
+                            GraphUpdated?.Invoke((object)this, EventArgs.Empty);
+                        }
+                        catch { }
                     }
                 }
                 Console.WriteLine($"MatchGraph Task Ending");
