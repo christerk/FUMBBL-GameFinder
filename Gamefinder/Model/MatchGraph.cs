@@ -227,7 +227,7 @@ namespace Fumbbl.Gamefinder.Model
             CoachRemoved?.Invoke(this, new CoachUpdatedArgs { Coach = coach });
         }
 
-        private void InternalAddTeamToCoach(Team team, Coach coach)
+        private static void InternalAddTeamToCoach(Team team, Coach coach)
         {
             coach.Add(team);
         }

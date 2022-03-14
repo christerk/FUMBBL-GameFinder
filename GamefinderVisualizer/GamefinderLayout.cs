@@ -13,12 +13,10 @@ namespace GamefinderVisualizer
 {
     internal class GamefinderLayout : DefaultParameterizedLayoutAlgorithmBase<DataVertex, DataEdge, BidirectionalGraph<DataVertex, DataEdge>, GamefinderLayoutParameters>
     {
-        readonly IDictionary<DataVertex, Size> _sizes;
 
-        public GamefinderLayout(BidirectionalGraph<DataVertex, DataEdge> visitedGraph, IDictionary<DataVertex, Point> vertexPositions, IDictionary<DataVertex, Size> vertexSizes, GamefinderLayoutParameters parameters)
+        public GamefinderLayout(BidirectionalGraph<DataVertex, DataEdge> visitedGraph, IDictionary<DataVertex, Point> vertexPositions, GamefinderLayoutParameters parameters)
             : base(visitedGraph, vertexPositions, parameters)
         {
-            _sizes = vertexSizes;
         }
 
         public override bool SupportsObjectFreeze => false;

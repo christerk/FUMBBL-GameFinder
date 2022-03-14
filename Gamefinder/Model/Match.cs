@@ -10,7 +10,7 @@
         private readonly Team _team1;
         private readonly Team _team2;
         private DateTime _resetTimestamp;
-        private MatchState _matchState;
+        private readonly MatchState _matchState;
 
         public MatchState MatchState => _matchState;
 
@@ -67,7 +67,7 @@
             }
         }
 
-        private int GetTimeout(MatchState state)
+        private static int GetTimeout(MatchState state)
         {
             if (state.IsHidden)
             {

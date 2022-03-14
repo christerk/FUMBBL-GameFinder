@@ -18,13 +18,13 @@ namespace GamefinderVisualizer
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is bool)) return TrueColor;
+            if (value is not bool) return TrueColor;
             return (bool)value ? TrueColor : FalseColor;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is Brush)) return false;
+            if (value is not Brush) return false;
             return ReferenceEquals((Brush)value, TrueColor);
         }
 

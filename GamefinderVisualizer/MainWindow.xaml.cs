@@ -17,32 +17,21 @@ namespace GamefinderVisualizer
     /// </summary>
     public partial class MainWindow : Window
     {
-        private MatchGraph _graph;
-        private GamefinderGraph graph = new GamefinderGraph();
-        private object _lockObj = new object();
-        Dictionary<Team, DataVertex> tLookup = new();
-        Dictionary<Coach, DataVertex> cLookup = new();
-        Dictionary<Match, DataEdge> mLookup = new();
-        private Rect viewportRect = new Rect(-400, -400, 800, 800);
-
+        private readonly MatchGraph _graph;
+        private readonly GamefinderGraph _renderedGraph = new();
+        private readonly Dictionary<Team, DataVertex> tLookup = new();
+        private readonly Dictionary<Coach, DataVertex> cLookup = new();
+        private readonly Dictionary<Match, DataEdge> mLookup = new();
+        private readonly Rect viewportRect = new(-400, -400, 800, 800);
 
         public MainWindow()
         {
             GamefinderModel gameFinder = new();
             _graph = new(gameFinder);
-            _graph.CoachAdded += _graph_CoachAdded;
-            _graph.CoachRemoved += _graph_CoachRemoved;
-            _graph.TeamAdded += _graph_TeamAdded;
-            _graph.TeamRemoved += _graph_TeamRemoved;
-            _graph.MatchAdded += _graph_MatchAdded;
-            _graph.MatchRemoved += _graph_MatchRemoved;
-            _graph.GraphUpdated += _graph_Updated;
 
             InitializeComponent();
 
             ZoomControl.SetViewFinderVisibility(zoomctrl, Visibility.Hidden);
-
-            zoomctrl.ZoomToContent(viewportRect);
 
             InitializeGamefinder();
             InitializeGraph();
@@ -50,95 +39,9 @@ namespace GamefinderVisualizer
             Loaded += Window_Loaded;
         }
 
-        private void _graph_Updated(object? sender, EventArgs e)
-        {
-            this.Dispatcher.Invoke(() =>
-            {
-                Area.GenerateGraph(true, true);
-                Area.ShowAllEdgesLabels(false);
-                zoomctrl.ZoomToContent(viewportRect);
-            });
-        }
-
-        private void _graph_MatchRemoved(object? sender, EventArgs e)
-        {
-            Match? match = ((MatchUpdatedArgs)e).Match;
-
-            if (match is not null && mLookup.ContainsKey(match))
-            {
-                graph.RemoveEdge(mLookup[match]);
-            }
-        }
-
-        private void _graph_MatchAdded(object? sender, EventArgs e)
-        {
-            Match? match = ((MatchUpdatedArgs)e).Match;
-
-            if (match is not null)
-            {
-                (var t1, var t2) = (match.Team1, match.Team2);
-                var edge = new DataEdge(tLookup[t1], tLookup[t2]) { IsMatch = true, Match = match };
-                graph.AddEdge(edge);
-            }
-        }
-
-        private void _graph_TeamRemoved(object? sender, EventArgs e)
-        {
-            Team? team = ((TeamUpdatedArgs)e).Team;
-
-            if (team is not null)
-            {
-                graph.RemoveVertex(tLookup[team]);
-            }
-        }
-
-        private void _graph_TeamAdded(object? sender, EventArgs e)
-        {
-            Team? team = ((TeamUpdatedArgs)e).Team;
-
-            if (team is not null)
-            {
-                var vertex = new DataVertex() { SortId = team.Id, VType = DataVertex.VertexType.Team, Label = team.Name };
-                vertex.GroupId = team.Coach.Id;
-                tLookup.Add(team, vertex);
-                graph.AddVertex(vertex);
-
-                var cVertex = cLookup[team.Coach];
-                cVertex.SortId = team.Id;
-                var edge = new DataEdge(cVertex, vertex) { IsMatch = false, State = "", Match = null };
-                graph.AddEdge(edge);
-            }
-
-        }
-
-        private void _graph_CoachRemoved(object? sender, EventArgs e)
-        {
-            Coach? coach = ((CoachUpdatedArgs)e).Coach;
-
-            if (coach is not null && cLookup.ContainsKey(coach)) {
-                graph.RemoveVertex(cLookup[coach]);
-                coaches.Remove(coach);
-                cLookup.Remove(coach);
-            }
-        }
-
-        private void _graph_CoachAdded(object? sender, EventArgs e)
-        {
-            Coach? coach = ((CoachUpdatedArgs)e).Coach;
-
-            if (coach is not null)
-            {
-                var vertex = new DataVertex() { SortId = 0, VType = DataVertex.VertexType.Coach, Coach = coach, Label = coach.Name };
-                coaches.Add(coach);
-                graph.AddVertex(vertex);
-                cLookup.Add(coach, vertex);
-            }
-
-        }
-
-        List<Coach> coaches = new();
-        Random r = new Random();
-        int cNum = 0, tNum = 0;
+        private readonly List<Coach> coaches = new();
+        private readonly Random r = new();
+        private int cNum = 0, tNum = 0;
 
         private async Task Simulate()
         {
@@ -147,14 +50,14 @@ namespace GamefinderVisualizer
             if (addCoach)
             {
                 cNum++;
-                Coach c = new Coach() { Id = cNum, Name = $"Coach {cNum}" };
+                Coach c = new() { Id = cNum, Name = $"Coach {cNum}" };
                 _graph.AddCoach(c);
 
                 var numTeams = r.Next(3, 6) / 2;
                 for (var i = 0; i < numTeams; i++)
                 {
                     tNum++;
-                    Team t = new Team(_graph, c) { Id = tNum, Name = $"Team {tNum}" };
+                    Team t = new(_graph, c) { Id = tNum, Name = $"Team {tNum}" };
                     _graph.AddTeam(t);
                 }
             }
@@ -205,13 +108,20 @@ namespace GamefinderVisualizer
 
         private void InitializeGamefinder()
         {
+            _graph.CoachAdded += Graph_CoachAdded;
+            _graph.CoachRemoved += Graph_CoachRemoved;
+            _graph.TeamAdded += Graph_TeamAdded;
+            _graph.TeamRemoved += Graph_TeamRemoved;
+            _graph.MatchAdded += Graph_MatchAdded;
+            _graph.MatchRemoved += Graph_MatchRemoved;
+            _graph.GraphUpdated += Graph_Updated;
+
             _graph.Start();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             Area.GenerateGraph(true, true);
-            Area.ShowAllEdgesLabels(false);
 
             Task.Run(async () =>
             {
@@ -225,7 +135,7 @@ namespace GamefinderVisualizer
 
         private void InitializeGraph()
         {
-            var logicCore = new GamefinderGraphLogicCore() { Graph = graph };
+            var logicCore = new GamefinderGraphLogicCore() { Graph = _renderedGraph };
 
             logicCore.DefaultLayoutAlgorithm = LayoutAlgorithmTypeEnum.Circular;
             logicCore.DefaultLayoutAlgorithmParams = logicCore.AlgorithmFactory.CreateLayoutParameters(LayoutAlgorithmTypeEnum.Circular);
@@ -237,24 +147,101 @@ namespace GamefinderVisualizer
             logicCore.AsyncAlgorithmCompute = false;
 
             var vertexPositions = new Dictionary<DataVertex, GraphX.Measure.Point>();
-            var vertexSizes = new Dictionary<DataVertex, GraphX.Measure.Size>();
             var parameters = new GamefinderLayoutParameters();
-            logicCore.ExternalLayoutAlgorithm = new GamefinderLayout(graph, vertexPositions, vertexSizes, parameters);
+            logicCore.ExternalLayoutAlgorithm = new GamefinderLayout(_renderedGraph, vertexPositions, parameters);
 
             Area.LogicCore = logicCore;
-            Area.ShowAllEdgesLabels(false);
         }
 
-        private void Relayout_Click(object sender, RoutedEventArgs e)
+        #region MatchGraph Event Handlers
+        private void Graph_Updated(object? sender, EventArgs e)
         {
-            Area.RelayoutGraph();
-            zoomctrl.ZoomToContent(viewportRect);
+            this.Dispatcher.Invoke(() =>
+            {
+                Area.GenerateGraph(true, true);
+                Area.ShowAllEdgesLabels(false);
+                zoomctrl.ZoomToContent(viewportRect);
+            });
         }
 
-        private void Randomgraph_Click(object sender, RoutedEventArgs e)
+        private void Graph_MatchRemoved(object? sender, EventArgs e)
         {
-            Area.GenerateGraph(true, true);
-            zoomctrl.ZoomToContent(viewportRect);
+            Match? match = ((MatchUpdatedArgs)e).Match;
+
+            if (match is not null && mLookup.ContainsKey(match))
+            {
+                _renderedGraph.RemoveEdge(mLookup[match]);
+            }
         }
+
+        private void Graph_MatchAdded(object? sender, EventArgs e)
+        {
+            Match? match = ((MatchUpdatedArgs)e).Match;
+
+            if (match is not null)
+            {
+                (var t1, var t2) = (match.Team1, match.Team2);
+                var edge = new DataEdge(tLookup[t1], tLookup[t2]) { IsMatch = true, Match = match };
+                _renderedGraph.AddEdge(edge);
+            }
+        }
+
+        private void Graph_TeamRemoved(object? sender, EventArgs e)
+        {
+            Team? team = ((TeamUpdatedArgs)e).Team;
+
+            if (team is not null)
+            {
+                _renderedGraph.RemoveVertex(tLookup[team]);
+            }
+        }
+
+        private void Graph_TeamAdded(object? sender, EventArgs e)
+        {
+            Team? team = ((TeamUpdatedArgs)e).Team;
+
+            if (team is not null)
+            {
+                var vertex = new DataVertex() { SortId = team.Id, VType = DataVertex.VertexType.Team, Label = team.Name };
+                vertex.GroupId = team.Coach.Id;
+                tLookup.Add(team, vertex);
+                _renderedGraph.AddVertex(vertex);
+
+                var cVertex = cLookup[team.Coach];
+                cVertex.SortId = team.Id;
+                var edge = new DataEdge(cVertex, vertex) { IsMatch = false, State = "", Match = null };
+                _renderedGraph.AddEdge(edge);
+            }
+
+        }
+
+        private void Graph_CoachRemoved(object? sender, EventArgs e)
+        {
+            Coach? coach = ((CoachUpdatedArgs)e).Coach;
+
+            if (coach is not null && cLookup.ContainsKey(coach))
+            {
+                _renderedGraph.RemoveVertex(cLookup[coach]);
+                coaches.Remove(coach);
+                cLookup.Remove(coach);
+            }
+        }
+
+        private void Graph_CoachAdded(object? sender, EventArgs e)
+        {
+            Coach? coach = ((CoachUpdatedArgs)e).Coach;
+
+            if (coach is not null)
+            {
+                var vertex = new DataVertex() { SortId = 0, VType = DataVertex.VertexType.Coach, Coach = coach, Label = coach.Name };
+                coaches.Add(coach);
+                _renderedGraph.AddVertex(vertex);
+                cLookup.Add(coach, vertex);
+            }
+
+        }
+        #endregion
+
+
     }
 }

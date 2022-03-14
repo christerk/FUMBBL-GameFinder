@@ -40,7 +40,7 @@ namespace GamefinderVisualizer.Models
         public string SourcePointerColor => StateToColour(Match?.MatchState?.State1 ?? TeamState.Default);
         public string TargetPointerColor => StateToColour(Match?.MatchState?.State2 ?? TeamState.Default);
 
-        private string StateToColour(TeamState state1)
+        private static string StateToColour(TeamState state1)
         {
             return state1 switch
             {

@@ -15,7 +15,7 @@ namespace GamefinderVisualizer.Models
 {
     public class GamefinderGraphLogicCore : IGXLogicCore<DataVertex, DataEdge, BidirectionalGraph<DataVertex, DataEdge>>
     {
-        private GXLogicCore<DataVertex, DataEdge, BidirectionalGraph<DataVertex, DataEdge>> _coreLogicCore;
+        private readonly GXLogicCore<DataVertex, DataEdge, BidirectionalGraph<DataVertex, DataEdge>> _coreLogicCore;
 
         public GamefinderGraphLogicCore()
         {
@@ -39,26 +39,6 @@ namespace GamefinderVisualizer.Models
             }
             else
                 throw new Exception("No Layout Algorithm");
-        }
-
-        private Rect CalculateContentRectangle(IDictionary<DataVertex, Point> actualPositions = null)
-        {
-            double minX = 0;
-            double minY = 0;
-            double maxX = 0;
-            double maxY = 0;
-
-            // actualPositions = actualPositions ?? _vertexPosSource;
-
-            foreach (var pos in actualPositions.Values)
-            {
-                if (pos.X < minX) minX = pos.X;
-                if (pos.Y < minY) minY = pos.Y;
-                if (pos.X > maxX) maxX = pos.X;
-                if (pos.Y > maxY) maxY = pos.Y;
-            }
-
-            return new Rect(new Point(minX, minY), new Size(maxX - minX, maxY - minY));
         }
 
         #region Passthrough
@@ -117,12 +97,12 @@ namespace GamefinderVisualizer.Models
             return ((IGXLogicCore<DataVertex, DataEdge, BidirectionalGraph<DataVertex, DataEdge>>)_coreLogicCore).GenerateLayoutAlgorithm(vertexSizes, vertexPositions);
         }
 
-        public IExternalOverlapRemoval<DataVertex> GenerateOverlapRemovalAlgorithm(Dictionary<DataVertex, Rect> rectangles = null)
+        public IExternalOverlapRemoval<DataVertex> GenerateOverlapRemovalAlgorithm(Dictionary<DataVertex, Rect> rectangles)
         {
             return ((IGXLogicCore<DataVertex, DataEdge, BidirectionalGraph<DataVertex, DataEdge>>)_coreLogicCore).GenerateOverlapRemovalAlgorithm(rectangles);
         }
 
-        public IExternalEdgeRouting<DataVertex, DataEdge> GenerateEdgeRoutingAlgorithm(Size desiredSize, IDictionary<DataVertex, Point> vertexPositions = null, IDictionary<DataVertex, Rect> rectangles = null)
+        public IExternalEdgeRouting<DataVertex, DataEdge> GenerateEdgeRoutingAlgorithm(Size desiredSize, IDictionary<DataVertex, Point> vertexPositions, IDictionary<DataVertex, Rect> rectangles)
         {
             return ((IGXLogicCore<DataVertex, DataEdge, BidirectionalGraph<DataVertex, DataEdge>>)_coreLogicCore).GenerateEdgeRoutingAlgorithm(desiredSize, vertexPositions, rectangles);
         }
@@ -150,6 +130,7 @@ namespace GamefinderVisualizer.Models
         public void Dispose()
         {
             ((IDisposable)_coreLogicCore).Dispose();
+            GC.SuppressFinalize(this);
         }
         #endregion
     }

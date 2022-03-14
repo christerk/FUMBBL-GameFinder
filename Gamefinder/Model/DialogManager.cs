@@ -33,10 +33,8 @@ namespace Fumbbl.Gamefinder.Model
         public void Rescan()
         {
             HashSet<Coach> coaches = new();
-            foreach (var pair in _startDialogs)
+            foreach (var d in _startDialogs.Values)
             {
-                var match = pair.Key;
-                var d = pair.Value;
                 if (d.Coach1 is not null && d.Coach2 is not null)
                 {
                     if (!d.Active && !coaches.Contains(d.Coach1) && !coaches.Contains(d.Coach2))
@@ -63,7 +61,7 @@ namespace Fumbbl.Gamefinder.Model
         internal void Remove(Team team)
         {
             var dialogs = _startDialogs.Where(p => p.Key.Team1.Equals(team) || p.Key.Team2.Equals(team));
-            if (dialogs.Count() > 0)
+            if (dialogs.Any())
             {
                 foreach (var dialog in dialogs)
                 {
@@ -76,7 +74,7 @@ namespace Fumbbl.Gamefinder.Model
         internal void Remove(Coach coach)
         {
             var dialogs = _startDialogs.Where(p => (p.Value.Coach1?.Equals(coach) ?? false) || (p.Value.Coach2?.Equals(coach) ?? false));
-            if (dialogs.Count() > 0)
+            if (dialogs.Any())
             {
                 foreach (var dialog in dialogs)
                 {
@@ -87,7 +85,7 @@ namespace Fumbbl.Gamefinder.Model
             }
         }
 
-        private void Unlock(Match match)
+        private static void Unlock(Match match)
         {
             if (match.MatchState.TriggerLaunchGame)
             {

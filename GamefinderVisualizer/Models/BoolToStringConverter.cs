@@ -18,7 +18,7 @@ namespace GamefinderVisualizer
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (!(value is bool)) return TrueValue;
+            if (value is not bool) return TrueValue;
             return (bool)value ? TrueValue : FalseValue;
         }
 
