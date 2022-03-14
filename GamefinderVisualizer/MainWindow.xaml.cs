@@ -47,7 +47,7 @@ namespace GamefinderVisualizer
             _graph.TeamRemoved += _graph_TeamRemoved;
             _graph.MatchAdded += _graph_MatchAdded;
             _graph.MatchRemoved += _graph_MatchRemoved;
-            _graph.UpdateComplete += _graph_UpdateComplete;
+            _graph.GraphUpdated += _graph_Updated;
 
             InitializeComponent();
 
@@ -61,7 +61,7 @@ namespace GamefinderVisualizer
             Loaded += Window_Loaded;
         }
 
-        private void _graph_UpdateComplete(object? sender, EventArgs e)
+        private void _graph_Updated(object? sender, EventArgs e)
         {
             this.Dispatcher.Invoke(() =>
             {
@@ -151,9 +151,9 @@ namespace GamefinderVisualizer
         Random r = new Random();
         int cNum = 0, tNum = 0;
 
-        private void Simulate()
+        private async Task Simulate()
         {
-            var maxCoaches = 7;
+            var maxCoaches = 5;
             var addCoach = coaches.Count < maxCoaches || r.Next(0,20) == 0;
             if (addCoach)
             {
@@ -178,7 +178,7 @@ namespace GamefinderVisualizer
 
             foreach (var c in coaches.ToArray())
             {
-                var matches = _graph.GetMatches(c).ToList();
+                var matches = await _graph.GetMatchesAsync(c);
                 if (matches.Count > 0)
                 {
                     var launchedMatch = matches.FirstOrDefault(m => m?.MatchState?.TriggerLaunchGame ?? false);
@@ -224,12 +224,12 @@ namespace GamefinderVisualizer
             Area.GenerateGraph(true, true);
             Area.ShowAllEdgesLabels(false);
 
-            Task.Run(() =>
+            Task.Run(async () =>
             {
                 while(true)
                 {
                     Thread.Sleep(1000);
-                    Simulate();
+                    await Simulate();
                 }
             });
         }

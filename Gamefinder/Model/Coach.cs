@@ -42,5 +42,10 @@ namespace Fumbbl.Gamefinder.Model
         {
             Locked = true;
         }
+
+        internal void Unlock()
+        {
+            Locked = false;
+        }
     }
 }

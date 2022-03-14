@@ -12,6 +12,7 @@ namespace Fumbbl.Gamefinder.Model
         private readonly ConcurrentHashSet<Team> _teams;
         private readonly ConcurrentHashSet<Coach> _coaches;
         private readonly ConcurrentHashSet<Match> _matches;
+        private readonly DialogManager _dialogManager;
 
         public event EventHandler? CoachAdded;
         public event EventHandler? CoachRemoved;
@@ -19,7 +20,10 @@ namespace Fumbbl.Gamefinder.Model
         public event EventHandler? TeamRemoved;
         public event EventHandler? MatchAdded;
         public event EventHandler? MatchRemoved;
-        public event EventHandler? UpdateComplete;
+        public event EventHandler? GraphUpdated;
+
+        internal bool IsDialogActive(Match match) => _dialogManager.IsDialogActive(match);
+
         public MatchGraph(GamefinderModel gameFinder)
         {
             _gameFinder = gameFinder;
@@ -27,26 +31,28 @@ namespace Fumbbl.Gamefinder.Model
             _coaches = new();
             _matches = new();
             _eventQueue = new();
+            _dialogManager = new();
         }
 
         public void Start()
         {
-            Task.Run(() =>
+            Task.Run((Action)(() =>
             {
+                var lastTick = DateTime.Now;
                 while (!_eventQueue.IsAddingCompleted)
                 {
                     if (_eventQueue.TryTake(out Action? action, TimeSpan.FromSeconds(1)))
                     {
                         action.Invoke();
                     }
-                    else
+                    if ((DateTime.Now - lastTick).TotalMilliseconds > 1000)
                     {
                         Tick();
-                        UpdateComplete?.Invoke(this, EventArgs.Empty);
+                        GraphUpdated?.Invoke((object)this, EventArgs.Empty);
                     }
                 }
                 Console.WriteLine($"MatchGraph Task Ending");
-            });
+            }));
         }
 
         public void Stop()
@@ -55,7 +61,7 @@ namespace Fumbbl.Gamefinder.Model
             _eventQueue.CompleteAdding();
         }
 
-        public void Tick()
+        private void Tick()
         {
             foreach (var match in _matches)
             {
@@ -72,10 +78,33 @@ namespace Fumbbl.Gamefinder.Model
             }
         }
 
-        internal void TriggerLaunchGame(Match match)
+        public void AddTeam(Team team) => _eventQueue.Add(() => InternalAddTeam(team));
+        public void RemoveTeam(Team team) => _eventQueue.Add(() => InternalRemoveTeam(team));
+        public void AddCoach(Coach coach) => _eventQueue.Add(() => InternalAddCoach(coach));
+        public void RemoveCoach(Coach coach) => _eventQueue.Add(() => InternalRemoveCoach(coach));
+        public void AddTeamToCoach(Team team, Coach coach) => _eventQueue.Add(() => InternalAddTeamToCoach(team, coach));
+        public async Task<List<Match>> GetMatchesAsync(Coach coach) => await Serialized<Coach, List<Match>>(InternalGetMatches, coach);
+        public async Task<List<Match>> GetMatches() => await Serialized<List<Match>>(InternalGetMatches);
+        public void TriggerLaunchGame(Match match) => _eventQueue.Add(() => InternalTriggerLaunchGame(match));
+        public void TriggerStartDialog(Match match) => _eventQueue.Add(() => InternalTriggerStartDialog(match));
+        public async Task<List<Team>> GetTeams() => await Serialized<List<Team>>(InternalGetTeams);
+        public async Task<Match?> GetMatch(Team team1, Team team2) => await Serialized<Team, Team, Match?>(InternalGetMatch, team1, team2);
+
+        private void InternalTriggerStartDialog(Match match)
+        {
+            Coach c1 = match.Team1.Coach;
+            Coach c2 = match.Team2.Coach;
+            var active = !_dialogManager.HasDialog(c1, c2);
+
+            _dialogManager.Add(match, c1, c2, active);
+        }
+
+        private void InternalTriggerLaunchGame(Match match)
         {
             var coach1 = match.Team1.Coach;
             var coach2 = match.Team2.Coach;
+
+            _dialogManager.Remove(match);
 
             coach1.Lock();
             coach2.Lock();
@@ -92,31 +121,17 @@ namespace Fumbbl.Gamefinder.Model
             }
         }
 
-        public void AddTeam(Team team) => _eventQueue.Add(() => InternalAddTeam(team));
-        public void RemoveTeam(Team team) => _eventQueue.Add(() => InternalRemoveTeam(team));
-        public void AddCoach(Coach coach) => _eventQueue.Add(() => InternalAddCoach(coach));
-        public void RemoveCoach(Coach coach) => _eventQueue.Add(() => InternalRemoveCoach(coach));
-        public void AddTeamToCoach(Team team, Coach coach) => _eventQueue.Add(() => InternalAddTeamToCoach(team, coach));
+        private void InternalGetTeams(TaskCompletionSource<List<Team>> result)
+            => result.SetResult(new List<Team>(_teams));
+        
+        private void InternalGetMatches(TaskCompletionSource<List<Match>> result)
+            => result.SetResult(new List<Match>(_matches));
 
-        public IEnumerable<Team> GetTeams()
-        {
-            return _teams;
-        }
+        private void InternalGetMatches(Coach coach, TaskCompletionSource<List<Match>> result)
+            => result.SetResult(new List<Match>(coach.GetTeams().SelectMany(t => t.GetMatches())));
 
-        public IEnumerable<Match> GetMatches()
-        {
-            return _matches;
-        }
-
-        public Match? GetMatch(Team team1, Team team2)
-        {
-            return team1.GetMatches().Where(m => m.Includes(team2)).FirstOrDefault();
-        }
-
-        public IEnumerable<Match> GetMatches(Coach coach)
-        {
-            return coach.GetTeams().SelectMany(team => team.GetMatches());
-        }
+        public void InternalGetMatch(Team team1, Team team2, TaskCompletionSource<Match?> result)
+            => result.SetResult(team1.GetMatches().Where(m => m.Includes(team2)).FirstOrDefault());
 
         private void InternalAddTeam(Team team)
         {
@@ -155,6 +170,7 @@ namespace Fumbbl.Gamefinder.Model
             {
                 return;
             }
+            _dialogManager.Remove(team);
 
             foreach (var match in team.GetMatches())
             {
@@ -164,6 +180,8 @@ namespace Fumbbl.Gamefinder.Model
                     Console.WriteLine($"Removing {match}");
                     t.Remove(match);
                     _matches.TryRemove(match);
+
+                    _dialogManager.Remove(match);
                     MatchRemoved?.Invoke(this, new MatchUpdatedArgs { Match = match });
 
                 }
@@ -191,6 +209,8 @@ namespace Fumbbl.Gamefinder.Model
         {
             Console.WriteLine($"Removing {coach}");
 
+            _dialogManager.Remove(coach);
+
             foreach (var team in coach.GetTeams())
             {
                 InternalRemoveTeam(team);
@@ -204,6 +224,27 @@ namespace Fumbbl.Gamefinder.Model
             coach.Add(team);
         }
 
+        #region Serialized() helper methods
+        private async Task<T> Serialized<T>(Action<TaskCompletionSource<T>> func)
+        {
+            TaskCompletionSource<T> result = new();
+            _eventQueue.Add(() => func(result));
+            return await result.Task;
+        }
 
+        private async Task<T> Serialized<P, T>(Action<P, TaskCompletionSource<T>> func, P param)
+        {
+            TaskCompletionSource<T> result = new();
+            _eventQueue.Add(() => func(param, result));
+            return await result.Task;
+        }
+
+        private async Task<T> Serialized<P1, P2, T>(Action<P1, P2, TaskCompletionSource<T>> func, P1 param1, P2 param2)
+        {
+            TaskCompletionSource<T> result = new();
+            _eventQueue.Add(() => func(param1, param2, result));
+            return await result.Task;
+        }
+        #endregion
     }
 }

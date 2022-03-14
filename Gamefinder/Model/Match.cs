@@ -17,6 +17,8 @@
         public Team Team1 => _team1;
         public Team Team2 => _team2;
 
+        public bool IsDialogActive => MatchState.TriggerStartDialog && _owningGraph.IsDialogActive(this);
+
         public Match(MatchGraph owningGraph, Team team1, Team team2)
         {
             _matchState = new MatchState();
@@ -27,17 +29,23 @@
 
         public void Act(TeamAction action, Team? team = default)
         {
+            var activeDialog = _owningGraph.IsDialogActive(this);
             int teamNumber = _team1.Equals(team) ? 1 : 2;
-            var matchAction = (action, teamNumber) switch
+            var matchAction = (action, teamNumber, activeDialog) switch
             {
-                (TeamAction.Timeout, _) => MatchAction.Timeout,
-                (TeamAction.Cancel, _) => MatchAction.Cancel,
-                (TeamAction.Accept, 1) =>  MatchAction.Accept1,
-                (TeamAction.Accept, 2) => MatchAction.Accept2,
-                (TeamAction.Start, 1) => MatchAction.Start1,
-                (TeamAction.Start, 2) => MatchAction.Start2,
-                (_, _) => MatchAction.None
+                (TeamAction.Timeout, _, _) => MatchAction.Timeout,
+                (TeamAction.Cancel, _, _) => MatchAction.Cancel,
+                (TeamAction.Accept, 1, _) =>  MatchAction.Accept1,
+                (TeamAction.Accept, 2, _) => MatchAction.Accept2,
+                (TeamAction.Start, 1, true) => MatchAction.Start1,
+                (TeamAction.Start, 2, true) => MatchAction.Start2,
+                (_, _, _) => MatchAction.None
             };
+            
+            if (matchAction == MatchAction.None)
+            {
+                return;
+            }
 
             var changed = _matchState.Act(matchAction);
 
@@ -46,6 +54,11 @@
                 var timeoutSeconds = GetTimeout(_matchState);
 
                 _resetTimestamp = DateTime.Now.AddSeconds(timeoutSeconds);
+
+                if (_matchState.TriggerStartDialog)
+                {
+                    _owningGraph.TriggerStartDialog(this);
+                }
 
                 if (_matchState.TriggerLaunchGame)
                 {

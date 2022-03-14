@@ -21,7 +21,7 @@ namespace GamefinderVisualizer.Models
 
                 if (Match?.MatchState.TriggerStartDialog ?? false)
                 {
-                    return "Orange";
+                    return Match.IsDialogActive ? "Orange" : "Yellow";
                 }
 
                 if (Match?.MatchState.TriggerLaunchGame ?? false)
