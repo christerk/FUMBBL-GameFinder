@@ -1,31 +1,22 @@
 ﻿namespace Fumbbl.Gamefinder.Model
 {
-    public class Match
+    public class Match : BasicMatch
     {
         private const int DEFAULT_TIMEOUT = 30;
         private const int LAUNCHED_TIMEOUT = 3;
         private const int HIDDEN_TIMEOUT = 120;
 
         private readonly MatchGraph _owningGraph;
-        private readonly Team _team1;
-        private readonly Team _team2;
         private DateTime _resetTimestamp;
-        private readonly MatchState _matchState;
 
-        public MatchState MatchState => _matchState;
         public MatchGraph Graph => _owningGraph;
-
-        public Team Team1 => _team1;
-        public Team Team2 => _team2;
 
         public bool IsDialogActive => MatchState.TriggerStartDialog && _owningGraph.IsDialogActive(this);
 
         public Match(MatchGraph owningGraph, Team team1, Team team2)
+            : base(team1, team2)
         {
-            _matchState = new MatchState();
             _owningGraph = owningGraph;
-            _team1 = team1;
-            _team2 = team2;
         }
 
         public void Act(TeamAction action, Team? team = default)
@@ -94,8 +85,8 @@
             {
                 if (_matchState.TriggerLaunchGame)
                 {
-                    _owningGraph.RemoveCoach(Team1.Coach);
-                    _owningGraph.RemoveCoach(Team2.Coach);
+                    _owningGraph.Remove(Team1.Coach);
+                    _owningGraph.Remove(Team2.Coach);
                 }
                 else
                 {
@@ -103,43 +94,5 @@
                 }
             }
         }
-
-        public override string ToString()
-        {
-            return $"Match({_team1.Name} vs {_team2.Name})";
-        }
-
-        public bool Includes(Team team)
-        {
-            return _team1.Equals(team) || _team2.Equals(team);
-        }
-
-        internal Team? GetOpponent(Team team)
-        {
-            if (_team1.Equals(team))
-            {
-                return _team2;
-            }
-            if (_team2.Equals(team))
-            {
-                return _team1;
-            }
-            return default;
-        }
-        public bool Equals(Match? other)
-        {
-            return other is not null && this._team1.Equals(other._team1) && this._team2.Equals(other._team2);
-        }
-
-        public override bool Equals(object? other)
-        {
-            return other is not null && other is Match match && Equals(match);
-        }
-
-        public override int GetHashCode()
-        {
-            return HashCode.Combine("Match", _team1, _team2);
-        }
-
     }
 }

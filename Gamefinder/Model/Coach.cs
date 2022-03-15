@@ -38,12 +38,12 @@ namespace Fumbbl.Gamefinder.Model
             return $"Coach({Name})";
         }
 
-        internal void Lock()
+        public void Lock()
         {
             Locked = true;
         }
 
-        internal void Unlock()
+        public void Unlock()
         {
             Locked = false;
         }

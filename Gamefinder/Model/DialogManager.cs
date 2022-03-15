@@ -2,9 +2,9 @@
 
 namespace Fumbbl.Gamefinder.Model
 {
-    internal class DialogManager
+    public class DialogManager
     {
-        private readonly ConcurrentDictionary<Match, StartDialog> _startDialogs;
+        private readonly ConcurrentDictionary<BasicMatch, StartDialog> _startDialogs;
         private readonly HashSet<Coach> _activeCoaches;
 
         public DialogManager()
@@ -13,7 +13,7 @@ namespace Fumbbl.Gamefinder.Model
             _activeCoaches = new();
         }
 
-        internal bool IsDialogActive(Match match)
+        public bool IsDialogActive(BasicMatch match)
         {
             if (_startDialogs.TryGetValue(match, out var dialog))
             {
@@ -22,12 +22,12 @@ namespace Fumbbl.Gamefinder.Model
             return false;
         }
 
-        internal bool HasDialog(Coach c1, Coach c2)
+        public bool HasDialog(Coach c1, Coach c2)
         {
             return _startDialogs.Values.Any(d => d.Coach1 == c1 || d.Coach1 == c2 || d.Coach2 == c1 || d.Coach2 == c2);
         }
 
-        internal void Add(Match match)
+        public void Add(BasicMatch match)
         {
             _startDialogs.TryAdd(match, new StartDialog(match));
             Rescan();
@@ -62,7 +62,7 @@ namespace Fumbbl.Gamefinder.Model
             }
         }
 
-        internal void Remove(Match match, bool rescan = true)
+        public void Remove(BasicMatch match, bool rescan = true)
         {
             if (_startDialogs.TryRemove(match, out var dialog))
             {
@@ -78,7 +78,7 @@ namespace Fumbbl.Gamefinder.Model
             }
         }
 
-        internal void Remove(Team team)
+        public void Remove(Team team)
         {
             var dialogs = _startDialogs.Where(p => p.Key.Team1.Equals(team) || p.Key.Team2.Equals(team));
             if (dialogs.Any())
@@ -94,7 +94,7 @@ namespace Fumbbl.Gamefinder.Model
             }
         }
 
-        internal void Remove(Coach coach)
+        public void Remove(Coach coach)
         {
             var dialogs = _startDialogs.Where(p => (p.Value.Coach1?.Equals(coach) ?? false) || (p.Value.Coach2?.Equals(coach) ?? false));
             if (dialogs.Any())
@@ -108,7 +108,7 @@ namespace Fumbbl.Gamefinder.Model
             }
         }
 
-        private static void Unlock(Match match)
+        private static void Unlock(BasicMatch match)
         {
             if (match.MatchState.TriggerLaunchGame)
             {

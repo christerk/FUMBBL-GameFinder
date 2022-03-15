@@ -22,7 +22,8 @@ namespace Fumbbl.Gamefinder.Model
         public event EventHandler? MatchRemoved;
         public event EventHandler? GraphUpdated;
 
-        internal bool IsDialogActive(Match match) => _dialogManager.IsDialogActive(match);
+        public DialogManager DialogManager => _dialogManager;
+        public bool IsDialogActive(Match match) => _dialogManager.IsDialogActive(match);
 
         public MatchGraph(GamefinderModel gameFinder)
         {
@@ -81,17 +82,17 @@ namespace Fumbbl.Gamefinder.Model
                 if (coach.IsTimedOut)
                 {
                     Console.WriteLine($"{coach} timed out");
-                    RemoveCoach(coach);
+                    Remove(coach);
                 }
             }
         }
 
         public void Dispatch(Action action) => _eventQueue.Add(action);
 
-        public void AddTeam(Team team) => _eventQueue.Add(() => InternalAddTeam(team));
-        public void RemoveTeam(Team team) => _eventQueue.Add(() => InternalRemoveTeam(team));
-        public void AddCoach(Coach coach) => _eventQueue.Add(() => InternalAddCoach(coach));
-        public void RemoveCoach(Coach coach) => _eventQueue.Add(() => InternalRemoveCoach(coach));
+        public void Add(Team team) => _eventQueue.Add(() => InternalAddTeam(team));
+        public void Remove(Team team) => _eventQueue.Add(() => InternalRemoveTeam(team));
+        public void Add(Coach coach) => _eventQueue.Add(() => InternalAddCoach(coach));
+        public void Remove(Coach coach) => _eventQueue.Add(() => InternalRemoveCoach(coach));
         public void AddTeamToCoach(Team team, Coach coach) => _eventQueue.Add(() => InternalAddTeamToCoach(team, coach));
         public async Task<List<Match>> GetMatchesAsync(Coach coach) => await Serialized<Coach, List<Match>>(InternalGetMatches, coach);
         public async Task<List<Match>> GetMatches() => await Serialized<List<Match>>(InternalGetMatches);

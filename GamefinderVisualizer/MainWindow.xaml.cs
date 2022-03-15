@@ -51,20 +51,21 @@ namespace GamefinderVisualizer
             {
                 cNum++;
                 Coach c = new() { Id = cNum, Name = $"Coach {cNum}" };
-                _graph.AddCoach(c);
+                _graph.Add(c);
 
                 var numTeams = r.Next(3, 6) / 2;
                 for (var i = 0; i < numTeams; i++)
                 {
                     tNum++;
-                    Team t = new(_graph, c) { Id = tNum, Name = $"Team {tNum}" };
-                    _graph.AddTeam(t);
+                    Team t = new(c) { Id = tNum, Name = $"Team {tNum}" };
+                    _graph.AddTeamToCoach(t, c);
+                    _graph.Add(t);
                 }
             }
 
             if (coaches.Count > maxCoaches)
             {
-                _graph.RemoveCoach(coaches.First());
+                _graph.Remove(coaches.First());
             }
 
             foreach (var c in coaches.ToArray())

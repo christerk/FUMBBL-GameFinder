@@ -10,11 +10,10 @@ namespace Fumbbl.Gamefinder.Model
 
         private readonly ConcurrentHashSet<Match> _matches;
 
-        public Team(MatchGraph graph, Coach coach)
+        public Team(Coach coach)
         {
             Coach = coach;
             _matches = new();
-            graph.AddTeamToCoach(this, coach);
         }
 
         public void Add(Match m)

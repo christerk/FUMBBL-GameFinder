@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FumbblApi", "..\FumbblApi\F
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GamefinderVisualizer", "GamefinderVisualizer\GamefinderVisualizer.csproj", "{D7A809F0-E1C2-4D0B-AA5B-D46042E83758}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamefinderTest", "GamefinderTest\GamefinderTest.csproj", "{59F1B172-FC53-4956-B315-25072950C112}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{D7A809F0-E1C2-4D0B-AA5B-D46042E83758}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7A809F0-E1C2-4D0B-AA5B-D46042E83758}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D7A809F0-E1C2-4D0B-AA5B-D46042E83758}.Release|Any CPU.Build.0 = Release|Any CPU
+		{59F1B172-FC53-4956-B315-25072950C112}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{59F1B172-FC53-4956-B315-25072950C112}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{59F1B172-FC53-4956-B315-25072950C112}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{59F1B172-FC53-4956-B315-25072950C112}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

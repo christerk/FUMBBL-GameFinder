@@ -1,0 +1,84 @@
+﻿using Fumbbl.Gamefinder.Model;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace GamefinderTest
+{
+    public class DataModelTests : IClassFixture<GamefinderFixture>
+    {
+        private GamefinderFixture _fixture;
+
+        public DataModelTests(GamefinderFixture fixture)
+        {
+            _fixture = fixture;
+        }
+
+        [Fact]
+        public void CoachEquality()
+        {
+            Coach c1 = new Coach() { Id = 1, Name = "Coach 1" };
+            Coach c2 = new Coach() { Id = 2, Name = "Coach 2" };
+            Coach c3 = new Coach() { Id = 1, Name = "Another Coach 1" };
+
+            Assert.Equal(c1, c1);
+            Assert.NotEqual(c1, c2);
+            Assert.Equal(c1, c3);
+        }
+
+
+        [Fact]
+        public void TeamEquality()
+        {
+            Coach c1 = new Coach() { Id = 1, Name = "Coach 1" };
+            Coach c2 = new Coach() { Id = 2, Name = "Coach 2" };
+
+            Team t1 = new Team(c1) { Id = 1 };
+            Team t2 = new Team(c1) { Id = 2 };
+            Team t3 = new Team(c1) { Id = 1 };
+
+            Assert.Equal(t1, t1);
+            Assert.NotEqual(t1, t2);
+            Assert.Equal(t1, t3);
+
+            Team t4 = new Team(c2) { Id = 1, Name = "Team of another coach, but with same ID" };
+            Assert.Equal(t1, t4);
+        }
+
+        [Fact]
+        public void MatchEquality()
+        {
+            Coach c1 = new Coach() { Id = 1, Name = "Coach 1" };
+            Coach c2 = new Coach() { Id = 2, Name = "Coach 2" };
+            Coach c3 = new Coach() { Id = 3, Name = "Coach 3" };
+
+            Team t1 = new Team(c1) { Id = 1 };
+            Team t2 = new Team(c2) { Id = 2 };
+            Team t3 = new Team(c2) { Id = 2 };
+
+            BasicMatch m1 = new BasicMatch(t1, t2);
+            BasicMatch m2 = new BasicMatch(t1, t3);
+
+            Assert.Equal(m1, m2);
+        }
+
+        [Fact]
+        public void MirroredEquality()
+        {
+            Coach c1 = new Coach() { Id = 1, Name = "Coach 1" };
+            Coach c2 = new Coach() { Id = 2, Name = "Coach 2" };
+
+            Team t1 = new Team(c1) { Id = 1 };
+            Team t2 = new Team(c2) { Id = 2 };
+
+            BasicMatch m = new BasicMatch(t1, t2);
+            BasicMatch mirrored = new BasicMatch(t2, t1);
+
+            Assert.Equal(m, mirrored);
+
+        }
+    }
+}
