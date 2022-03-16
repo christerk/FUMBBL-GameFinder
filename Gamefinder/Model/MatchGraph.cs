@@ -89,18 +89,19 @@ namespace Fumbbl.Gamefinder.Model
 
         public void Dispatch(Action action) => _eventQueue.Add(action);
 
-        public void Add(Team team) => _eventQueue.Add(() => InternalAddTeam(team));
-        public void Remove(Team team) => _eventQueue.Add(() => InternalRemoveTeam(team));
-        public void Add(Coach coach) => _eventQueue.Add(() => InternalAddCoach(coach));
-        public void Remove(Coach coach) => _eventQueue.Add(() => InternalRemoveCoach(coach));
-        public void AddTeamToCoach(Team team, Coach coach) => _eventQueue.Add(() => InternalAddTeamToCoach(team, coach));
+        public void Add(Team team) => Dispatch(() => InternalAddTeam(team));
+        public void Remove(Team team) => Dispatch(() => InternalRemoveTeam(team));
+        public void Add(Coach coach) => Dispatch(() => InternalAddCoach(coach));
+        public void Remove(Coach coach) => Dispatch(() => InternalRemoveCoach(coach));
+        public void Remove(Match match) => Dispatch(() => InternalRemoveMatch(match));
+        public void AddTeamToCoach(Team team, Coach coach) => Dispatch(() => InternalAddTeamToCoach(team, coach));
         public async Task<List<Match>> GetMatchesAsync(Coach coach) => await Serialized<Coach, List<Match>>(InternalGetMatches, coach);
         public async Task<List<Match>> GetMatches() => await Serialized<List<Match>>(InternalGetMatches);
         public async Task<List<Team>> GetTeams() => await Serialized<List<Team>>(InternalGetTeams);
         public async Task<Match?> GetMatch(Team team1, Team team2) => await Serialized<Team, Team, Match?>(InternalGetMatch, team1, team2);
-        public void TriggerLaunchGame(Match match) => _eventQueue.Add(() => InternalTriggerLaunchGame(match));
-        public void TriggerStartDialog(Match match) => _eventQueue.Add(() => InternalTriggerStartDialog(match));
-        public void ClearDialog(Match match) => _eventQueue.Add(() => InternalClearDialog(match));
+        public void TriggerLaunchGame(Match match) => Dispatch(() => InternalTriggerLaunchGame(match));
+        public void TriggerStartDialog(Match match) => Dispatch(() => InternalTriggerStartDialog(match));
+        public void ClearDialog(Match match) => Dispatch(() => InternalClearDialog(match));
 
         internal void InternalClearDialog(Match match)
         {
@@ -122,14 +123,11 @@ namespace Fumbbl.Gamefinder.Model
             coach1.Lock();
             coach2.Lock();
 
-            foreach (var team in coach1.GetTeams().Concat(coach2.GetTeams()))
+            foreach (var m in coach1.GetTeams().Concat(coach2.GetTeams()).SelectMany(t => t.GetMatches()))
             {
-                foreach (var m in team.GetMatches())
+                if (!m.Equals(match))
                 {
-                    if (!m.Equals(match))
-                    {
-                        m.Act(TeamAction.Cancel);
-                    }
+                    m.Act(TeamAction.Cancel);
                 }
             }
         }
@@ -208,6 +206,29 @@ namespace Fumbbl.Gamefinder.Model
             TeamRemoved?.Invoke(this, new TeamUpdatedArgs { Team = team });
         }
 
+        private void InternalRemoveMatch(Match match)
+        {
+            if (match is null || !_matches.Contains(match))
+            {
+                return;
+            }
+            _dialogManager.Remove(match);
+
+            Console.WriteLine($"Removing {match}");
+            if (_matches.TryRemove(match))
+            {
+                match.Team1.Remove(match);
+                match.Team2.Remove(match);
+            }
+            if (match.MatchState.TriggerLaunchGame)
+            {
+                match.Team1.Coach.Unlock();
+                match.Team2.Coach.Unlock();
+            }
+
+            MatchRemoved?.Invoke(this, new MatchUpdatedArgs { Match = match });
+        }
+
         private void InternalAddCoach(Coach coach)
         {
             Console.WriteLine($"Adding {coach}");
@@ -246,21 +267,21 @@ namespace Fumbbl.Gamefinder.Model
         private Task<T> Serialized<T>(Action<TaskCompletionSource<T>> func)
         {
             TaskCompletionSource<T> result = new(TaskCreationOptions.RunContinuationsAsynchronously);
-            _eventQueue.Add(() => func(result));
+            Dispatch(() => func(result));
             return result.Task;
         }
 
         private Task<T> Serialized<P, T>(Action<P, TaskCompletionSource<T>> func, P param)
         {
             TaskCompletionSource<T> result = new(TaskCreationOptions.RunContinuationsAsynchronously);
-            _eventQueue.Add(() => func(param, result));
+            Dispatch(() => func(param, result));
             return result.Task;
         }
 
         private Task<T> Serialized<P1, P2, T>(Action<P1, P2, TaskCompletionSource<T>> func, P1 param1, P2 param2)
         {
             TaskCompletionSource<T> result = new(TaskCreationOptions.RunContinuationsAsynchronously);
-            _eventQueue.Add(() => func(param1, param2, result));
+            Dispatch(() => func(param1, param2, result));
             return result.Task;
         }
         #endregion

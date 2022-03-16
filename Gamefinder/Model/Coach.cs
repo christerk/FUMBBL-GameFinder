@@ -5,12 +5,13 @@ namespace Fumbbl.Gamefinder.Model
     public class Coach : IEquatable<Coach>
     {
         public ConcurrentHashSet<Team> _teams;
-        public DateTime _lastEventTime = DateTime.Now;
         public string Name { get; set; } = String.Empty;
+        public int Id { get; set; }
+
+        public DateTime _lastEventTime = DateTime.Now;
 
         public bool IsTimedOut => (DateTime.Now - _lastEventTime).TotalSeconds > 4;
 
-        public int Id { get; set; }
         public bool Locked { get; private set; } = false;
 
         public Coach()

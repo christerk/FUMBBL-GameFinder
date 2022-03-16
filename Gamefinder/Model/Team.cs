@@ -2,7 +2,7 @@
 
 namespace Fumbbl.Gamefinder.Model
 {
-    public class Team
+    public class Team : IEquatable<Team>
     {
         public Coach Coach { get; init; }
         public string Name { get; set; } = string.Empty;

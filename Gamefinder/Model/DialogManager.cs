@@ -22,11 +22,6 @@ namespace Fumbbl.Gamefinder.Model
             return false;
         }
 
-        public bool HasDialog(Coach c1, Coach c2)
-        {
-            return _startDialogs.Values.Any(d => d.Coach1 == c1 || d.Coach1 == c2 || d.Coach2 == c1 || d.Coach2 == c2);
-        }
-
         public void Add(BasicMatch match)
         {
             _startDialogs.TryAdd(match, new StartDialog(match));
