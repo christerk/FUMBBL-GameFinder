@@ -26,7 +26,7 @@
             return _team1.Equals(team) || _team2.Equals(team);
         }
 
-        internal Team? GetOpponent(Team team)
+        public Team? GetOpponent(Team team)
         {
             if (_team1.Equals(team))
             {
@@ -38,6 +38,10 @@
             }
             return default;
         }
+
+        public virtual void TriggerLaunch() { }
+        public virtual void TriggerStart() { }
+        public virtual void ClearDialog() { }
 
         public override string ToString()
         {
@@ -52,7 +56,7 @@
 
         public override bool Equals(object? other)
         {
-            return other is not null && other is Match match && Equals(match);
+            return other is not null && other is BasicMatch match && Equals(match);
         }
 
         public override int GetHashCode()

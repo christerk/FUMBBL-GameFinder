@@ -3,6 +3,11 @@ namespace Fumbbl.Gamefinder.Model.Event
 {
     public class MatchUpdatedArgs : EventArgs
     {
-        public Match? Match { get; set; }
+        public BasicMatch? Match { get; set; }
+
+        public MatchUpdatedArgs(BasicMatch match)
+        {
+            Match = match;
+        }
     }
 }

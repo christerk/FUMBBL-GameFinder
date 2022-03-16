@@ -18,11 +18,11 @@
 
         public bool IsDefault => State1 == TeamState.Default && State2 == TeamState.Default;
 
-        private static Action? ClearDialog(Match match) => () => match.Graph.ClearDialog(match);
-        private static Action? TriggerStart(Match match) => () => match.Graph.TriggerStartDialog(match);
-        private static Action? TriggerLaunch(Match match) => () => match.Graph.TriggerLaunchGame(match);
+        private Action? ClearDialog(BasicMatch match) => () => match.ClearDialog();
+        private Action? TriggerStart(BasicMatch match) => () => match.TriggerStart();
+        private Action? TriggerLaunch(BasicMatch match) => () => match.TriggerLaunch();
 
-        public bool Act(Match match, MatchAction action)
+        public bool Act(BasicMatch match, MatchAction action)
         {
             (TeamState new1, TeamState new2, Action? trigger) = (State1, State2, action) switch
             {

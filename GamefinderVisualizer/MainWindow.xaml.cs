@@ -166,7 +166,7 @@ namespace GamefinderVisualizer
 
         private void Graph_MatchRemoved(object? sender, EventArgs e)
         {
-            Match? match = ((MatchUpdatedArgs)e).Match;
+            Match? match = ((MatchUpdatedArgs)e).Match as Match;
 
             if (match is not null && mLookup.ContainsKey(match))
             {
@@ -176,7 +176,7 @@ namespace GamefinderVisualizer
 
         private void Graph_MatchAdded(object? sender, EventArgs e)
         {
-            Match? match = ((MatchUpdatedArgs)e).Match;
+            Match? match = ((MatchUpdatedArgs)e).Match as Match;
 
             if (match is not null)
             {

@@ -34,26 +34,10 @@ namespace Fumbbl.Gamefinder.Model
             {
                 if (!d.Active && !_activeCoaches.Contains(d.Coach1) && !_activeCoaches.Contains(d.Coach2))
                 {
-                    Verify(d.Coach1, d.Coach2);
                     d.Active = true;
                     _activeCoaches.Add(d.Coach1);
                     _activeCoaches.Add(d.Coach2);
                 }
-            }
-        }
-
-        private void Verify(Coach c1, Coach c2)
-        {
-            var error = _startDialogs.Values.Any(
-                d =>
-                    (d.Coach1.Equals(c1) || d.Coach2.Equals(c1) || d.Coach1.Equals(c2) || d.Coach2.Equals(c2))
-                    &&
-                    d.Active
-            );
-
-            if (error)
-            {
-
             }
         }
 
@@ -91,7 +75,7 @@ namespace Fumbbl.Gamefinder.Model
 
         public void Remove(Coach coach)
         {
-            var dialogs = _startDialogs.Where(p => (p.Value.Coach1?.Equals(coach) ?? false) || (p.Value.Coach2?.Equals(coach) ?? false));
+            var dialogs = _startDialogs.Where(p => p.Value.Coach1.Equals(coach) || p.Value.Coach2.Equals(coach));
             if (dialogs.Any())
             {
                 foreach (var dialog in dialogs)

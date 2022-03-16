@@ -165,12 +165,12 @@ namespace Fumbbl.Gamefinder.Model
             {
                 if (team is not null && team.IsOpponentAllowed(opponent) && !opponent.Coach.Locked)
                 {
-                    var m = new Match(this, opponent, team);
-                    Console.WriteLine($"Adding {m}");
-                    _matches.Add(m);
-                    opponent.Add(m);
-                    team.Add(m);
-                    MatchAdded?.Invoke(this, new MatchUpdatedArgs { Match = m });
+                    var match = new Match(this, opponent, team);
+                    Console.WriteLine($"Adding {match}");
+                    _matches.Add(match);
+                    opponent.Add(match);
+                    team.Add(match);
+                    MatchAdded?.Invoke(this, new MatchUpdatedArgs(match));
                 }
             }
         }
@@ -198,7 +198,7 @@ namespace Fumbbl.Gamefinder.Model
                     }
 
                     _dialogManager.Remove(match);
-                    MatchRemoved?.Invoke(this, new MatchUpdatedArgs { Match = match });
+                    MatchRemoved?.Invoke(this, new MatchUpdatedArgs(match));
 
                 }
             }
@@ -226,7 +226,7 @@ namespace Fumbbl.Gamefinder.Model
                 match.Team2.Coach.Unlock();
             }
 
-            MatchRemoved?.Invoke(this, new MatchUpdatedArgs { Match = match });
+            MatchRemoved?.Invoke(this, new MatchUpdatedArgs(match));
         }
 
         private void InternalAddCoach(Coach coach)

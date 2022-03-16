@@ -29,6 +29,17 @@ namespace GamefinderTest
             Assert.Equal(c1, c3);
         }
 
+        [Fact]
+        public void CoachLock()
+        {
+            Coach c = new Coach() { Id = 1, Name = "Coach 1" };
+
+            Assert.False(c.Locked);
+            c.Lock();
+            Assert.True(c.Locked);
+            c.Unlock();
+            Assert.False(c.Locked);
+        }
 
         [Fact]
         public void TeamEquality()
@@ -63,6 +74,10 @@ namespace GamefinderTest
             BasicMatch m2 = new BasicMatch(t1, t3);
 
             Assert.Equal(m1, m2);
+
+            Assert.False(m1.Equals(null));
+            Assert.False(m1.Equals("Not a match"));
+            Assert.True(m1.Equals(m1 as object));
         }
 
         [Fact]
@@ -78,7 +93,41 @@ namespace GamefinderTest
             BasicMatch mirrored = new BasicMatch(t2, t1);
 
             Assert.Equal(m, mirrored);
-
         }
+
+        [Fact]
+        public void MatchOpponents()
+        {
+            Coach c1 = new Coach() { Id = 1, Name = "Coach 1" };
+            Coach c2 = new Coach() { Id = 2, Name = "Coach 2" };
+
+            Team t1 = new Team(c1) { Id = 1 };
+            Team t2 = new Team(c2) { Id = 2 };
+            Team t3 = new Team(c2) { Id = 3 };
+
+            BasicMatch match = new BasicMatch(t1, t2);
+
+            Assert.Equal(match.GetOpponent(t1), t2);
+            Assert.Equal(match.GetOpponent(t2), t1);
+            Assert.Null(match.GetOpponent(t3));
+        }
+
+        [Fact]
+        public void MatchIncludes()
+        {
+            Coach c1 = new Coach() { Id = 1, Name = "Coach 1" };
+            Coach c2 = new Coach() { Id = 2, Name = "Coach 2" };
+
+            Team t1 = new Team(c1) { Id = 1 };
+            Team t2 = new Team(c2) { Id = 2 };
+            Team t3 = new Team(c2) { Id = 3 };
+
+            BasicMatch match = new BasicMatch(t1, t2);
+
+            Assert.True(match.Includes(t1));
+            Assert.True(match.Includes(t2));
+            Assert.False(match.Includes(t3));
+        }
+
     }
 }

@@ -1,5 +1,5 @@
-﻿using ModelCoach = Fumbbl.Gamefinder.Model.Coach;
-using DtoCoach = Fumbbl.Gamefinder.DTO.Coach;
+﻿using DtoCoach = Fumbbl.Gamefinder.DTO.Coach;
+using ModelCoach = Fumbbl.Gamefinder.Model.Coach;
 
 namespace Fumbbl.Gamefinder.DTO
 {

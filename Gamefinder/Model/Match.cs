@@ -79,6 +79,19 @@
             return DEFAULT_TIMEOUT;
         }
 
+        public override void TriggerLaunch()
+        {
+            Graph.TriggerLaunchGame(this);
+        }
+        public override void TriggerStart()
+        {
+            Graph.TriggerStartDialog(this);
+        }
+        public override void ClearDialog()
+        {
+            Graph.ClearDialog(this);
+        }
+
         internal void Tick()
         {
             if (DateTime.Now > _resetTimestamp)
