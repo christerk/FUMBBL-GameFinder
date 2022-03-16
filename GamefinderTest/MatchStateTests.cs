@@ -18,17 +18,17 @@ namespace GamefinderTest
         }
 
         [Fact]
-        public void Default()
+        public async Task Default()
         {
             var m = new MatchState();
 
             Assert.True(m.IsDefault);
 
-            m.Act(Match(1, 2), MatchAction.Accept1);
+            _ = await m.ActAsync(Match(1, 2), MatchAction.Accept1);
             Assert.False(m.IsDefault);
 
             m = new MatchState();
-            m.Act(Match(1, 2), MatchAction.Accept2);
+            _ = await m.ActAsync(Match(1, 2), MatchAction.Accept2);
             Assert.False(m.IsDefault);
         }
 
@@ -39,21 +39,21 @@ namespace GamefinderTest
             var m = new MatchState();
 
             Assert.False(m.TriggerStartDialog);
-            m.Act(match, MatchAction.Accept1);
+            _ = m.ActAsync(match, MatchAction.Accept1);
             Assert.False(m.TriggerStartDialog);
-            m.Act(match, MatchAction.Accept2);
+            _ = m.ActAsync(match, MatchAction.Accept2);
             Assert.True(m.TriggerStartDialog);
-            m.Act(match, MatchAction.Start1);
+            _ = m.ActAsync(match, MatchAction.Start1);
             Assert.True(m.TriggerStartDialog);
-            m.Act(match, MatchAction.Start2);
+            _ = m.ActAsync(match, MatchAction.Start2);
             Assert.False(m.TriggerStartDialog);
 
             m = new MatchState();
-            m.Act(match, MatchAction.Accept2);
-            m.Act(match, MatchAction.Accept1);
-            m.Act(match, MatchAction.Start2);
+            _ = m.ActAsync(match, MatchAction.Accept2);
+            _ = m.ActAsync(match, MatchAction.Accept1);
+            _ = m.ActAsync(match, MatchAction.Start2);
             Assert.True(m.TriggerStartDialog);
-            m.Act(match, MatchAction.Cancel);
+            _ = m.ActAsync(match, MatchAction.Cancel);
             Assert.False(m.TriggerStartDialog);
         }
 
@@ -64,20 +64,20 @@ namespace GamefinderTest
             var m = new MatchState();
 
             Assert.False(m.TriggerLaunchGame);
-            m.Act(match, MatchAction.Accept1);
+            _ = m.ActAsync(match, MatchAction.Accept1);
             Assert.False(m.TriggerLaunchGame);
-            m.Act(match, MatchAction.Accept2);
+            _ = m.ActAsync(match, MatchAction.Accept2);
             Assert.False(m.TriggerLaunchGame);
-            m.Act(match, MatchAction.Start1);
+            _ = m.ActAsync(match, MatchAction.Start1);
             Assert.False(m.TriggerLaunchGame);
-            m.Act(match, MatchAction.Start2);
+            _ = m.ActAsync(match, MatchAction.Start2);
             Assert.True(m.TriggerLaunchGame);
 
             m = new MatchState();
-            m.Act(match, MatchAction.Accept2);
-            m.Act(match, MatchAction.Accept1);
-            m.Act(match, MatchAction.Start2);
-            m.Act(match, MatchAction.Start1);
+            _ = m.ActAsync(match, MatchAction.Accept2);
+            _ = m.ActAsync(match, MatchAction.Accept1);
+            _ = m.ActAsync(match, MatchAction.Start2);
+            _ = m.ActAsync(match, MatchAction.Start1);
             Assert.True(m.TriggerLaunchGame);
         }
 
@@ -88,9 +88,9 @@ namespace GamefinderTest
             var m = new MatchState();
 
             Assert.False(m.IsHidden);
-            m.Act(match, MatchAction.Cancel);
+            _ = m.ActAsync(match, MatchAction.Cancel);
             Assert.True(m.IsHidden);
-            m.Act(match, MatchAction.Accept1);
+            _ = m.ActAsync(match, MatchAction.Accept1);
             Assert.True(m.IsHidden);
         }
         [Fact]
@@ -99,8 +99,8 @@ namespace GamefinderTest
             var match = Match(1, 2);
             var m = new MatchState();
 
-            m.Act(match, MatchAction.Accept1);
-            m.Act(match, MatchAction.Timeout);
+            _ = m.ActAsync(match, MatchAction.Accept1);
+            _ = m.ActAsync(match, MatchAction.Timeout);
             Assert.True(m.IsDefault);
         }
 
@@ -110,7 +110,7 @@ namespace GamefinderTest
             var match = Match(1, 2);
             var m = new MatchState();
 
-            m.Act(match, MatchAction.Start2);
+            _ = m.ActAsync(match, MatchAction.Start2);
             Assert.True(m.IsDefault);
         }
 

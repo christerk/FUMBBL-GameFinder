@@ -18,13 +18,13 @@
 
         public bool IsDefault => State1 == TeamState.Default && State2 == TeamState.Default;
 
-        private Action? ClearDialog(BasicMatch match) => () => match.ClearDialog();
-        private Action? TriggerStart(BasicMatch match) => () => match.TriggerStart();
-        private Action? TriggerLaunch(BasicMatch match) => () => match.TriggerLaunch();
+        private Func<Task>? ClearDialog(BasicMatch match) => async () => await match.ClearDialogAsync();
+        private Func<Task>? TriggerStart(BasicMatch match) => async () => await match.TriggerStartAsync();
+        private Func<Task>? TriggerLaunch(BasicMatch match) => async () => await match.TriggerLaunchAsync();
 
-        public bool Act(BasicMatch match, MatchAction action)
+        public async Task<bool> ActAsync(BasicMatch match, MatchAction action)
         {
-            (TeamState new1, TeamState new2, Action? trigger) = (State1, State2, action) switch
+            (TeamState new1, TeamState new2, Func<Task>? trigger) = (State1, State2, action) switch
             {
                 (_, _, MatchAction.Timeout) => (TeamState.Default, TeamState.Default, ClearDialog(match)),
                 (TeamState.Hidden, TeamState.Hidden, _) => (TeamState.Hidden, TeamState.Hidden, null), // Stop pattern matching
@@ -50,7 +50,10 @@
 
             (State1, State2) = (new1, new2);
 
-            trigger?.Invoke();
+            if (trigger != null)
+            {
+                await trigger.Invoke();
+            }
 
             return true;
         }

@@ -34,9 +34,18 @@ namespace GamefinderTest
             MatchGraph.Start();
         }
 
-        internal Coach CreateCoach(int id)
+        public Coach CreateCoach(int id)
         {
             return new Coach() { Id = id, Name = $"Coach {id}" };
+        }
+
+        public Team SimpleTeam(int teamId, int coachId = 0)
+        {
+            if (coachId == 0)
+            {
+                coachId = teamId;
+            }
+            return new Team(CreateCoach(coachId)) { Id = teamId, Name = $"Team {teamId}" };
         }
 
         public void Dispose()

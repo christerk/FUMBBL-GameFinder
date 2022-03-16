@@ -18,7 +18,7 @@ namespace GamefinderVisualizer
     public partial class MainWindow : Window
     {
         private readonly MatchGraph _graph;
-        private readonly GamefinderGraph _renderedGraph = new();
+        private GamefinderGraph _renderedGraph = new();
         private readonly Dictionary<Team, DataVertex> tLookup = new();
         private readonly Dictionary<Coach, DataVertex> cLookup = new();
         private readonly Dictionary<Match, DataEdge> mLookup = new();
@@ -51,21 +51,21 @@ namespace GamefinderVisualizer
             {
                 cNum++;
                 Coach c = new() { Id = cNum, Name = $"Coach {cNum}" };
-                _graph.Add(c);
+                await _graph.AddAsync(c);
 
                 var numTeams = r.Next(3, 6) / 2;
                 for (var i = 0; i < numTeams; i++)
                 {
                     tNum++;
                     Team t = new(c) { Id = tNum, Name = $"Team {tNum}" };
-                    _graph.AddTeamToCoach(t, c);
-                    _graph.Add(t);
+                    await _graph.AddTeamToCoachAsync(t, c);
+                    await _graph.AddAsync(t);
                 }
             }
 
             if (coaches.Count > maxCoaches)
             {
-                _graph.Remove(coaches.First());
+                await _graph.RemoveAsync(coaches.First());
             }
 
             foreach (var c in coaches.ToArray())
@@ -87,17 +87,17 @@ namespace GamefinderVisualizer
 
                         if (!match.MatchState.IsDefault && r.Next(20) == 0)
                         {
-                            match.Act(TeamAction.Cancel, ownTeam);
+                            await match.ActAsync(TeamAction.Cancel, ownTeam);
                         }
                         else
                         {
                             if (match.MatchState.TriggerStartDialog)
                             {
-                                match.Act(TeamAction.Start, ownTeam);
+                                await match.ActAsync(TeamAction.Start, ownTeam);
                             }
                             else
                             {
-                                match.Act(TeamAction.Accept, ownTeam);
+                                await match.ActAsync(TeamAction.Accept, ownTeam);
                             }
                         }
                     }
@@ -114,7 +114,7 @@ namespace GamefinderVisualizer
             _graph.TeamRemoved += Graph_TeamRemoved;
             _graph.MatchAdded += Graph_MatchAdded;
             _graph.MatchRemoved += Graph_MatchRemoved;
-            _graph.GraphUpdated += Graph_Updated;
+            _graph.GraphUpdated += async (s, e) => await Graph_UpdatedAsync(s, e);
 
             _graph.Start();
         }
@@ -154,11 +154,11 @@ namespace GamefinderVisualizer
         }
 
         #region MatchGraph Event Handlers
-        private void Graph_Updated(object? sender, EventArgs e)
+        private async Task Graph_UpdatedAsync(object? sender, EventArgs e)
         {
-            this.Dispatcher.Invoke(() =>
+            await this.Dispatcher.InvokeAsync(() =>
             {
-                Area.GenerateGraph(true, true);
+                _renderedGraph.Generate(Area);
                 Area.ShowAllEdgesLabels(false);
                 zoomctrl.ZoomToContent(viewportRect);
             });

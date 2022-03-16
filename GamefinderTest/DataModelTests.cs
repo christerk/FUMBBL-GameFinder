@@ -73,9 +73,13 @@ namespace GamefinderTest
             BasicMatch m1 = new BasicMatch(t1, t2);
             BasicMatch m2 = new BasicMatch(t1, t3);
 
-            Assert.Equal(m1, m2);
+            Assert.NotNull(m1);
+            Assert.NotNull(m2);
 
+            Assert.Equal(m1, m2);
             Assert.False(m1.Equals(null));
+
+            if (m1 == null) return; // Remove IntelliSense warning
             Assert.False(m1.Equals("Not a match"));
             Assert.True(m1.Equals(m1 as object));
         }

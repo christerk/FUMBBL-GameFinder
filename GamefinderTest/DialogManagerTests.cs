@@ -136,10 +136,10 @@ namespace GamefinderTest
 
             _dialogManager.Add(match);
 
-            match.MatchState.Act(match, MatchAction.Accept1);
-            match.MatchState.Act(match, MatchAction.Accept2);
-            match.MatchState.Act(match, MatchAction.Start1);
-            match.MatchState.Act(match, MatchAction.Start2);
+            _ = match.MatchState.ActAsync(match, MatchAction.Accept1);
+            _ = match.MatchState.ActAsync(match, MatchAction.Accept2);
+            _ = match.MatchState.ActAsync(match, MatchAction.Start1);
+            _ = match.MatchState.ActAsync(match, MatchAction.Start2);
 
             _dialogManager.Remove(team1.Coach);
 

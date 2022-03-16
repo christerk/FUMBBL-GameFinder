@@ -39,9 +39,9 @@
             return default;
         }
 
-        public virtual void TriggerLaunch() { }
-        public virtual void TriggerStart() { }
-        public virtual void ClearDialog() { }
+        public virtual async Task TriggerLaunchAsync() { await Task.CompletedTask; }
+        public virtual async Task TriggerStartAsync() { await Task.CompletedTask; }
+        public virtual async Task ClearDialogAsync() { await Task.CompletedTask; }
 
         public override string ToString()
         {
