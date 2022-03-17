@@ -22,7 +22,26 @@ namespace GamefinderTest
         }
 
         [Fact]
-        public async void TeamAdd()
+        public async void CoachAdded()
+        {
+            var coach = _fixture.CreateCoach(1);
+            _ = _graph.AddAsync(coach);
+            var coaches = await _graph.GetCoachesAsync();
+            Assert.Contains(coach, coaches);
+        }
+
+        [Fact]
+        public async void CoachRemoved()
+        {
+            var coach = _fixture.CreateCoach(1);
+            _ = _graph.AddAsync(coach);
+            _ = _graph.RemoveAsync(coach);
+            var coaches = await _graph.GetCoachesAsync();
+            Assert.DoesNotContain(coach, coaches);
+        }
+
+        [Fact]
+        public async void TeamAdded()
         {
             var team = _fixture.SimpleTeam(1);
             _ = _graph.AddAsync(team);
@@ -31,13 +50,18 @@ namespace GamefinderTest
         }
 
         [Fact]
-        public async void TeamRemove()
+        public async void TeamRemoved()
         {
-            var team = _fixture.SimpleTeam(1);
-            _ = _graph.AddAsync(team);
-            _ = _graph.RemoveAsync(team);
+            var team1 = _fixture.SimpleTeam(1);
+            var team2 = _fixture.SimpleTeam(2);
+            _ = _graph.AddAsync(team1);
+            _ = _graph.AddAsync(team2);
+            _ = _graph.RemoveAsync(team1);
             var teams = await _graph.GetTeamsAsync();
-            Assert.DoesNotContain(team, teams);
+            Assert.DoesNotContain(team1, teams);
+
+            var matches = await _graph.GetMatchesAsync();
+            Assert.DoesNotContain(new BasicMatch(team1, team2), matches);
         }
 
         [Fact]
@@ -55,6 +79,39 @@ namespace GamefinderTest
             Assert.Contains(expectedMatch, matches);
         }
 
+        [Fact]
+        public async void Foo()
+        {
+            var team1 = _fixture.SimpleTeam(1);
+            var team2 = _fixture.SimpleTeam(2);
+            _ = _graph.AddAsync(team1);
+            _ = _graph.AddAsync(team2);
+            _ = _graph.AddTeamToCoachAsync(team1, team1.Coach);
+            _ = _graph.AddTeamToCoachAsync(team2, team2.Coach);
+
+            var expectedMatch = new BasicMatch(team1, team2);
+
+            var matches = await _graph.GetMatchesAsync(team1.Coach);
+            Assert.True(matches.Count() == 1);
+            Assert.Contains(expectedMatch, matches);
+
+        }
+
+        [Fact]
+        public async void MatchRemoved()
+        {
+            var team1 = _fixture.SimpleTeam(1);
+            var team2 = _fixture.SimpleTeam(2);
+            _ = _graph.AddAsync(team1);
+            _ = _graph.AddAsync(team2);
+
+            var match = new BasicMatch(team1, team2);
+
+            await _graph.RemoveAsync(match);
+
+            var matches = await _graph.GetMatchesAsync();
+            Assert.True(matches.Count() == 0);
+        }
         [Fact]
         public async void MatchLaunched()
         {

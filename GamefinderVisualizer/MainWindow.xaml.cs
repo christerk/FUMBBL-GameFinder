@@ -80,8 +80,8 @@ namespace GamefinderVisualizer
                         continue;
                     }
 
-                    var match = matches[r.Next(matches.Count)];
-                    if (!match.MatchState.IsHidden)
+                    var basicMatch = matches[r.Next(matches.Count)];
+                    if (!basicMatch.MatchState.IsHidden && basicMatch is Match match)
                     {
                         var ownTeam = match.Team1.Coach.Equals(c) ? match.Team1 : match.Team2;
 

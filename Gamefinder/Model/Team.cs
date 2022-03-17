@@ -8,7 +8,7 @@ namespace Fumbbl.Gamefinder.Model
         public string Name { get; set; } = string.Empty;
         public int Id { get; set; }
 
-        private readonly ConcurrentHashSet<Match> _matches;
+        private readonly ConcurrentHashSet<BasicMatch> _matches;
 
         public Team(Coach coach)
         {
@@ -21,7 +21,7 @@ namespace Fumbbl.Gamefinder.Model
             _matches.Add(m);
         }
 
-        public void Remove(Match m)
+        public void Remove(BasicMatch m)
         {
             _matches.TryRemove(m);
         }
@@ -31,7 +31,7 @@ namespace Fumbbl.Gamefinder.Model
             return !Equals(Coach, opponent.Coach);
         }
 
-        internal IEnumerable<Match> GetMatches()
+        internal IEnumerable<BasicMatch> GetMatches()
         {
             return _matches;
         }
