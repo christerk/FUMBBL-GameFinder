@@ -8,6 +8,15 @@ namespace Fumbbl.Gamefinder.Model
         public string Name { get; set; } = string.Empty;
         public int Id { get; set; }
 
+        public string Division { get; set; }
+        public int TeamValue { get; set; }
+        public string Roster { get; set; }
+        public int RosterLogo32 { get; set; }
+        public int Season { get; set; }
+        public int SeasonGames { get; set; }
+        public int LeagueId { get; set; }
+        public string LeagueName { get; set; }
+
         private readonly ConcurrentHashSet<BasicMatch> _matches;
 
         public Team(Coach coach)

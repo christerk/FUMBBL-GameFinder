@@ -2,9 +2,9 @@
 {
     public class Match : BasicMatch
     {
-        private const int DEFAULT_TIMEOUT = 30;
-        private const int LAUNCHED_TIMEOUT = 3;
-        private const int HIDDEN_TIMEOUT = 120;
+        public static int DEFAULT_TIMEOUT = 30;
+        public static int LAUNCHED_TIMEOUT = 3;
+        public static int HIDDEN_TIMEOUT = 120;
 
         private readonly MatchGraph _owningGraph;
         private DateTime _resetTimestamp;
@@ -12,6 +12,8 @@
         public MatchGraph Graph => _owningGraph;
 
         public bool IsDialogActive => MatchState.TriggerStartDialog && _owningGraph.IsDialogActive(this);
+
+        public long TimeUntilReset => (long)(_resetTimestamp - DateTime.Now).TotalMilliseconds;
 
         public Match(MatchGraph owningGraph, Team team1, Team team2)
             : base(team1, team2)

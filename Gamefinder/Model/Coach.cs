@@ -2,7 +2,7 @@
 
 namespace Fumbbl.Gamefinder.Model
 {
-    public class Coach : IEquatable<Coach>
+    public class Coach : IEquatable<Coach>, IKeyedItem<int>
     {
         public ConcurrentHashSet<Team> _teams;
         public string Name { get; set; } = String.Empty;
@@ -13,6 +13,10 @@ namespace Fumbbl.Gamefinder.Model
         public bool IsTimedOut => (DateTime.Now - _lastEventTime).TotalSeconds > 4;
 
         public bool Locked { get; private set; } = false;
+
+        public int Key => Id;
+
+        public string Rating { get; set; }
 
         public Coach()
         {

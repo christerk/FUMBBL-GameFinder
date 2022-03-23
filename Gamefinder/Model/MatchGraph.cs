@@ -7,7 +7,6 @@ namespace Fumbbl.Gamefinder.Model
 {
     public class MatchGraph
     {
-        private readonly GamefinderModel _gameFinder;
         private readonly BlockingCollection<Action> _eventQueue;
         private readonly ConcurrentHashSet<Team> _teams;
         private readonly ConcurrentHashSet<Coach> _coaches;
@@ -21,15 +20,15 @@ namespace Fumbbl.Gamefinder.Model
         public event EventHandler? MatchAdded;
         public event EventHandler? MatchRemoved;
         public event EventHandler? GraphUpdated;
+        public event EventHandler? MatchLaunched;
 
         public DialogManager DialogManager => _dialogManager;
         public bool IsDialogActive(Match match) => _dialogManager.IsDialogActive(match);
 
         private TimeSpan TickTimeout = TimeSpan.FromSeconds(1);
 
-        public MatchGraph(GamefinderModel gameFinder)
+        public MatchGraph()
         {
-            _gameFinder = gameFinder;
             _teams = new();
             _coaches = new();
             _matches = new();
@@ -119,11 +118,18 @@ namespace Fumbbl.Gamefinder.Model
         public async Task<List<BasicMatch>> GetMatchesAsync() => await Serialized<List<BasicMatch>>(InternalGetMatches);
         public async Task<List<Coach>> GetCoachesAsync() => await Serialized<List<Coach>>(InternalGetCoaches);
         public async Task<List<Team>> GetTeamsAsync() => await Serialized<List<Team>>(InternalGetTeams);
+        public async Task<List<Team>> GetTeamsAsync(Coach coach) => await Serialized<Coach, List<Team>>(InternalGetTeams, coach);
         public async Task<BasicMatch?> GetMatchAsync(Team team1, Team team2) => await Serialized<Team, Team, BasicMatch?>(InternalGetMatch, team1, team2);
         public async Task TriggerLaunchGameAsync(BasicMatch match) => await DispatchAsync(() => InternalTriggerLaunchGame(match));
         public async Task TriggerStartDialogAsync(Match match) => await DispatchAsync(() => InternalTriggerStartDialog(match));
         public async Task ClearDialogAsync(Match match) => await DispatchAsync(() => InternalClearDialog(match));
-        
+        public async Task<BasicMatch?> GetStartDialogMatch(Coach coach) => await Serialized<Coach, BasicMatch?>(InternalGetStartDialogMatch, coach);
+
+        private void InternalGetStartDialogMatch(Coach coach, TaskCompletionSource<BasicMatch?> result)
+        {
+            result.SetResult(_dialogManager.GetActiveDialog(coach));
+        }
+
         internal void InternalClearDialog(Match match)
         {
             _dialogManager.Remove(match);
@@ -151,6 +157,7 @@ namespace Fumbbl.Gamefinder.Model
                     await m1.ActAsync(TeamAction.Cancel);
                 }
             }
+            MatchLaunched?.Invoke(this, new MatchUpdatedArgs(match));
         }
 
         private void InternalGetCoaches(TaskCompletionSource<List<Coach>> result)
@@ -158,6 +165,9 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalGetTeams(TaskCompletionSource<List<Team>> result)
             => result.SetResult(new List<Team>(_teams));
+
+        private void InternalGetTeams(Coach coach, TaskCompletionSource<List<Team>> result)
+            => result.SetResult(new List<Team>(coach.GetTeams()));
 
         private void InternalGetMatches(TaskCompletionSource<List<BasicMatch>> result)
             => result.SetResult(new List<BasicMatch>(_matches));

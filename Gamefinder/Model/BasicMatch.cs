@@ -64,5 +64,10 @@
             return HashCode.Combine("Match", _team1.Id, _team2.Id);
         }
 
+        public bool IsBetween(int myTeamId, int opponentTeamId)
+        {
+            return myTeamId == _team1.Id && opponentTeamId == _team2.Id
+                || myTeamId == _team2.Id && opponentTeamId == _team1.Id;
+        }
     }
 }

@@ -95,5 +95,10 @@ namespace Fumbbl.Gamefinder.Model
                 match.Team2.Coach.Unlock();
             }
         }
+
+        public BasicMatch? GetActiveDialog(Coach coach)
+        {
+            return _startDialogs.FirstOrDefault(p => p.Value.Active && (p.Value.Coach1.Equals(coach) || p.Value.Coach2.Equals(coach))).Key;
+        }
     }
 }

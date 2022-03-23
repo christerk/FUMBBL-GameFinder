@@ -15,8 +15,17 @@
 
         public bool TriggerLaunchGame => (State1, State2) == (TeamState.Start, TeamState.Start);
         public bool IsHidden => State1 == TeamState.Hidden;
-
         public bool IsDefault => State1 == TeamState.Default && State2 == TeamState.Default;
+        public bool IsOffer => (State1, State2) switch
+        {
+            (TeamState.Default, TeamState.Accept) => true,
+            (TeamState.Accept, TeamState.Default) => true,
+            (TeamState.Accept, TeamState.Accept) => true,
+            (TeamState.Accept, TeamState.Start) => true,
+            (TeamState.Start, TeamState.Accept) => true,
+            (TeamState.Start, TeamState.Start) => true,
+            _ => false
+        };
 
         private Func<Task>? ClearDialog(BasicMatch match) => async () => await match.ClearDialogAsync();
         private Func<Task>? TriggerStart(BasicMatch match) => async () => await match.TriggerStartAsync();
