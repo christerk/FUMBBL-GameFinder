@@ -1,6 +1,10 @@
 using Fumbbl.Api;
+using Fumbbl.Gamefinder.Convert;
 using Fumbbl.Gamefinder.Model;
 using Microsoft.AspNetCore.Mvc;
+using TeamDto = Fumbbl.Gamefinder.DTO.Team;
+using OpponentDto = Fumbbl.Gamefinder.DTO.Opponent;
+using OfferDto = Fumbbl.Gamefinder.DTO.Offer;
 
 namespace Fumbbl.Gamefinder.Controllers
 {
@@ -11,12 +15,14 @@ namespace Fumbbl.Gamefinder.Controllers
         private readonly FumbblApi _fumbbl;
         private readonly ILogger<GamefinderController> _logger;
         private readonly GamefinderModel _model;
+        private readonly CoachCache _coachCache;
 
-        public GamefinderController(FumbblApi fumbbl, ILogger<GamefinderController> logger, GamefinderModel model)
+        public GamefinderController(FumbblApi fumbbl, ILogger<GamefinderController> logger, GamefinderModel model, CoachCache coachCache)
         {
             _fumbbl = fumbbl;
             _logger = logger;
             _model = model;
+            _coachCache = coachCache;
         }
 
         [HttpGet("Test")]
@@ -25,16 +31,124 @@ namespace Fumbbl.Gamefinder.Controllers
             return (await _fumbbl.OAuth.Identity()).ToString();
         }
 
-        [HttpGet("Count")]
-        public async Task<int> TestCountAsync()
+        [HttpPost("Activate")]
+        public async Task ActivateAsync([FromForm] int coachId)
         {
-            return await Task.FromResult(_model.Counter);
+            _coachCache.Flush(coachId);
+
+            var coach = await _coachCache.GetOrCreateAsync(coachId);
+
+            if (coach == null)
+            {
+                return;
+            }
+
+            _model.ActivateAsync(coach);
         }
 
-        [HttpGet("teams")]
-        public IEnumerable<Team> GetTeams()
+        [HttpPost("GetActivatedTeams")]
+        public async Task<IEnumerable<TeamDto>> GetActivatedTeamsAsync([FromForm] int coachId)
         {
-            yield break;
+            var coach = await _coachCache.GetOrCreateAsync(coachId);
+
+            if (coach == null)
+            {
+                return Enumerable.Empty<TeamDto>();
+            }
+
+            var teams = await _model.Graph.GetTeamsAsync(coach);
+
+            return teams.Select(t => t.ToUi());
         }
+
+        [HttpPost("Opponents")]
+        public async Task<IEnumerable<OpponentDto>> OpponentsAsync([FromForm] int coachId)
+        {
+            var coaches = await _model.Graph.GetCoachesAsync();
+
+            var opponents = new List<OpponentDto>();
+
+            foreach (var coach in coaches)
+            {
+                var opponent = coach.ToOpponent();
+                opponent.Teams = (await _model.Graph.GetTeamsAsync(coach)).Select(t => t.ToUi());
+
+                opponents.Add(opponent);
+            }
+
+            return opponents;
+        }
+
+        [HttpPost("Offers")]
+        public async Task<IEnumerable<OfferDto>> GetOffers([FromForm] int coachId)
+        {
+            var coach = await _coachCache.GetOrCreateAsync(coachId);
+
+            if (coach == null)
+            {
+                return Enumerable.Empty<OfferDto>();
+            }
+
+            var dialogMatch = await _model.Graph.GetStartDialogMatch(coach);
+
+            var offers = (await _model.Graph.GetMatchesAsync(coach)).Where(m => m.MatchState.IsOffer);
+
+            return offers.Select(o => {
+                var showDialog = o.Equals(dialogMatch);
+                var offer = o.ToUiOffer();
+                offer.ShowDialog = showDialog;
+                offer.LaunchGame = o.MatchState.TriggerLaunchGame;
+                return offer;
+            });
+        }
+
+        [HttpPost("MakeOffer")]
+        public async Task MakeOffer([FromForm] int coachId, [FromForm] int myTeamId, [FromForm] int opponentTeamId)
+        {
+            var coach = await _coachCache.GetOrCreateAsync(coachId);
+            if (coach != null)
+            {
+                var match = (await _model.Graph.GetMatchesAsync(coach)).SingleOrDefault(m => m.IsBetween(myTeamId, opponentTeamId)) as Match;
+                var ownTeam = match?.Team1.Id == myTeamId ? match?.Team1 : match?.Team2;
+
+                if (match != null && ownTeam != null && ownTeam.Coach.Id == coachId)
+                {
+                    await match.ActAsync(TeamAction.Accept, ownTeam);
+                }
+            }
+        }
+
+        [HttpPost("CancelOffer")]
+        public async Task CancelOffer([FromForm] int coachId, [FromForm] int myTeamId, [FromForm] int opponentTeamId)
+        {
+            var coach = await _coachCache.GetOrCreateAsync(coachId);
+            if (coach != null)
+            {
+                var match = (await _model.Graph.GetMatchesAsync(coach)).SingleOrDefault(m => m.IsBetween(myTeamId, opponentTeamId)) as Match;
+                var ownTeam = match?.Team1.Id == myTeamId ? match?.Team1 : match?.Team2;
+
+                if (match != null && ownTeam != null && ownTeam.Coach.Id == coachId)
+                {
+                    await match.ActAsync(TeamAction.Cancel, ownTeam);
+                }
+            }
+        }
+
+        [HttpPost("StartGame")]
+        public async Task StartGame([FromForm] int coachId, [FromForm] int myTeamId, [FromForm] int opponentTeamId)
+        {
+            var coach = await _coachCache.GetOrCreateAsync(coachId);
+            if (coach != null)
+            {
+                var match = (await _model.Graph.GetMatchesAsync(coach)).SingleOrDefault(m => m.IsBetween(myTeamId, opponentTeamId)) as Match;
+                var ownTeam = match?.Team1.Id == myTeamId ? match?.Team1 : match?.Team2;
+
+                if (match != null && ownTeam != null && ownTeam.Coach.Id == coachId)
+                {
+                    await match.ActAsync(TeamAction.Start, ownTeam);
+                }
+            }
+        }
+
     }
 }

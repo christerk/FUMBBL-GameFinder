@@ -26,8 +26,8 @@ namespace GamefinderVisualizer
 
         public MainWindow()
         {
-            GamefinderModel gameFinder = new();
-            _graph = new(gameFinder);
+            _graph = new();
+            GamefinderModel gameFinder = new(_graph);
 
             InitializeComponent();
 

@@ -15,8 +15,8 @@ namespace GamefinderTest
         public readonly List<Team> Teams;
         public GamefinderFixture()
         {
-            GamefinderModel = new();
-            MatchGraph = new(GamefinderModel);
+            MatchGraph = new();
+            GamefinderModel = new(MatchGraph);
             Coaches = new();
             Teams = new();
 

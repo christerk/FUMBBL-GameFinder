@@ -16,8 +16,8 @@ namespace GamefinderTest
         public MatchGraphTests(GamefinderFixture fixture)
         {
             _fixture = fixture;
-            GamefinderModel model = new();
-            _graph = new(model);
+            _graph = new();
+            GamefinderModel model = new(_graph);
             _graph.Start();
         }
 
