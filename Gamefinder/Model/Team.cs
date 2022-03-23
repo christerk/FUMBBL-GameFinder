@@ -64,5 +64,10 @@ namespace Fumbbl.Gamefinder.Model
         {
             return HashCode.Combine("Match", Id);
         }
+
+        public void RemoveMatches()
+        {
+            _matches.Clear();
+        }
     }
 }

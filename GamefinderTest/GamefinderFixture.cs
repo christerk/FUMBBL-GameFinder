@@ -39,13 +39,16 @@ namespace GamefinderTest
             return new Coach() { Id = id, Name = $"Coach {id}" };
         }
 
-        public Team SimpleTeam(int teamId, int coachId = 0)
+        public Team SimpleTeam(int teamId, Coach? coach = null)
         {
-            if (coachId == 0)
+            if (coach is null)
             {
-                coachId = teamId;
+                coach = CreateCoach(teamId);
             }
-            return new Team(CreateCoach(coachId)) { Id = teamId, Name = $"Team {teamId}" };
+            var team = new Team(coach) { Id = teamId, Name = $"Team {teamId}" };
+            coach.Add(team);
+
+            return team;
         }
 
         public void Dispose()

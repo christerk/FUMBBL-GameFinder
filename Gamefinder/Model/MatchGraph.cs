@@ -236,6 +236,7 @@ namespace Fumbbl.Gamefinder.Model
 
                 }
             }
+            team.RemoveMatches();
             _teams.TryRemove(team);
             TeamRemoved?.Invoke(this, new TeamUpdatedArgs { Team = team });
         }

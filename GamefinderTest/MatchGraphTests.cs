@@ -117,8 +117,8 @@ namespace GamefinderTest
         {
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);
-            var team3 = _fixture.SimpleTeam(3, 1);
-            var team4 = _fixture.SimpleTeam(4, 2);
+            var team3 = _fixture.SimpleTeam(3, team1.Coach);
+            var team4 = _fixture.SimpleTeam(4, team2.Coach);
             var team5 = _fixture.SimpleTeam(5);
             var team6 = _fixture.SimpleTeam(6);
 
@@ -128,13 +128,6 @@ namespace GamefinderTest
             _ = _graph.AddAsync(team4);
             _ = _graph.AddAsync(team5);
             _ = _graph.AddAsync(team6);
-
-            _ = _graph.AddTeamToCoachAsync(team1, team1.Coach);
-            _ = _graph.AddTeamToCoachAsync(team2, team2.Coach);
-            _ = _graph.AddTeamToCoachAsync(team3, team3.Coach);
-            _ = _graph.AddTeamToCoachAsync(team4, team4.Coach);
-            _ = _graph.AddTeamToCoachAsync(team5, team5.Coach);
-            _ = _graph.AddTeamToCoachAsync(team6, team6.Coach);
 
             var match = await _graph.GetMatchAsync(team1, team2);
 
@@ -157,6 +150,55 @@ namespace GamefinderTest
             var independentMatch = await _graph.GetMatchAsync(team5, team6);
             Assert.NotNull(independentMatch);
             Assert.False(independentMatch?.MatchState.IsHidden);
+        }
+
+        [Fact]
+        public async void AddCoachesWithTeams()
+        {
+            var team1 = _fixture.SimpleTeam(1);
+            var team2 = _fixture.SimpleTeam(2);
+
+            await _graph.AddAsync(team1.Coach);
+            await _graph.AddAsync(team2.Coach);
+
+            var match = await _graph.GetMatchAsync(team1, team2);
+            Assert.NotNull(match);
+
+            Assert.Single(await _graph.GetMatchesAsync(team1.Coach));
+            Assert.Single(await _graph.GetMatchesAsync(team2.Coach));
+        }
+
+        [Fact]
+        public async void VerifyMatchStateAfterActivate()
+        {
+            var team1 = _fixture.SimpleTeam(1);
+            var team2 = _fixture.SimpleTeam(2);
+
+            await _graph.AddAsync(team1.Coach);
+            await _graph.AddAsync(team2.Coach);
+
+            Assert.Single(await _graph.GetMatchesAsync(team1.Coach));
+            Assert.Single(await _graph.GetMatchesAsync(team2.Coach));
+
+            var match = await _graph.GetMatchAsync(team1, team2);
+            Assert.NotNull(match);
+
+            if (match == null)
+            {
+                return;
+            }
+
+            await match.MatchState.ActAsync(match, MatchAction.Accept2);
+
+            await _graph.RemoveAsync(team1.Coach);
+            Assert.Empty(await _graph.GetMatchesAsync(team2.Coach));
+            await _graph.AddAsync(team1.Coach);
+
+            var match1 = (await _graph.GetMatchesAsync(team1.Coach)).Single();
+            var match2 = (await _graph.GetMatchesAsync(team2.Coach)).Single();
+
+            Assert.True(match1.MatchState.IsDefault);
+            Assert.True(match2.MatchState.IsDefault);
         }
 
         public void Dispose()
