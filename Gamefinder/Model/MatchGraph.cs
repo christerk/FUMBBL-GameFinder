@@ -1,6 +1,7 @@
 ﻿
 using ConcurrentCollections;
 using Fumbbl.Gamefinder.Model.Event;
+using Fumbbl.Gamefinder.Model.Store;
 using System.Collections.Concurrent;
 
 namespace Fumbbl.Gamefinder.Model
@@ -56,18 +57,15 @@ namespace Fumbbl.Gamefinder.Model
                             GraphUpdated?.Invoke((object)this, EventArgs.Empty);
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
-                        Console.WriteLine(e.Message);
                     }
                 }
-                Console.WriteLine($"MatchGraph Task Ending");
             }));
         }
 
         public void Stop()
         {
-            Console.WriteLine($"Halting MatchGraph Task");
             _eventQueue.CompleteAdding();
         }
 
@@ -82,7 +80,6 @@ namespace Fumbbl.Gamefinder.Model
             {
                 if (coach.IsTimedOut)
                 {
-                    Console.WriteLine($"{coach} timed out");
                     _ = RemoveAsync(coach);
                 }
             }
@@ -186,12 +183,10 @@ namespace Fumbbl.Gamefinder.Model
 
             if (!_coaches.Contains(team.Coach))
             {
-                Console.WriteLine($"Adding {team.Coach}");
                 _coaches.Add(team.Coach);
                 CoachAdded?.Invoke(this, new CoachUpdatedArgs { Coach = team.Coach });
             }
 
-            Console.WriteLine($"Adding {team}");
             _teams.Add(team);
             TeamAdded?.Invoke(this, new TeamUpdatedArgs { Team = team });
             foreach (var opponent in _teams.GetTeams())
@@ -199,7 +194,6 @@ namespace Fumbbl.Gamefinder.Model
                 if (team is not null && team.IsOpponentAllowed(opponent) && !opponent.Coach.Locked)
                 {
                     var match = new Match(this, opponent, team);
-                    Console.WriteLine($"Adding {match}");
                     _matches.Add(match);
                     MatchAdded?.Invoke(this, new MatchUpdatedArgs(match));
                 }
@@ -219,7 +213,6 @@ namespace Fumbbl.Gamefinder.Model
                 var t = match.GetOpponent(team);
                 if (t is not null)
                 {
-                    Console.WriteLine($"Removing {match}");
                     _matches.Remove(match);
                     if (match.MatchState.TriggerLaunchGame)
                     {
@@ -245,7 +238,6 @@ namespace Fumbbl.Gamefinder.Model
             }
             _dialogManager.Remove(match);
 
-            Console.WriteLine($"Removing {match}");
             _matches.Remove(match);
             if (match.MatchState.TriggerLaunchGame)
             {
@@ -258,7 +250,6 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalAddCoach(Coach coach)
         {
-            Console.WriteLine($"Adding {coach}");
             if (!_coaches.Contains(coach))
             {
                 _coaches.Add(coach);
@@ -268,8 +259,6 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalRemoveCoach(Coach coach)
         {
-            Console.WriteLine($"Removing {coach}");
-
             _dialogManager.Remove(coach);
 
             foreach (var team in _teams.GetTeams(coach))

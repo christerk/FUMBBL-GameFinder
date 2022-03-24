@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using TeamDto = Fumbbl.Gamefinder.DTO.Team;
 using OpponentDto = Fumbbl.Gamefinder.DTO.Opponent;
 using OfferDto = Fumbbl.Gamefinder.DTO.Offer;
+using Fumbbl.Gamefinder.Model.Cache;
 
 namespace Fumbbl.Gamefinder.Controllers
 {
@@ -46,6 +47,11 @@ namespace Fumbbl.Gamefinder.Controllers
             }
 
             _model.ActivateAsync(coach);
+
+            await foreach (var team in _teamCache.GetTeams(coach))
+            {
+                _ = _model.Graph.AddAsync(team);
+            }
         }
 
         [HttpPost("GetActivatedTeams")]

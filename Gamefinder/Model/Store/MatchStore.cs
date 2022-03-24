@@ -1,7 +1,7 @@
 ﻿using System.Collections.Concurrent;
 using ConcurrentCollections;
 
-namespace Fumbbl.Gamefinder.Model
+namespace Fumbbl.Gamefinder.Model.Store
 {
     internal class MatchStore
     {

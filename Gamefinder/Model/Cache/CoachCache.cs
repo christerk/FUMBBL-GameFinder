@@ -1,7 +1,7 @@
 ﻿using Fumbbl.Api;
 using Fumbbl.Gamefinder.Convert;
 
-namespace Fumbbl.Gamefinder.Model
+namespace Fumbbl.Gamefinder.Model.Cache
 {
     public class CoachCache : FlushableCache<int, Coach>
     {
