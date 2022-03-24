@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace Fumbbl.Gamefinder.Model
+namespace Fumbbl.Gamefinder.Model.Cache
 {
     public abstract class FlushableCache<K, V>
         where K : notnull
