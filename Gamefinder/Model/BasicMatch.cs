@@ -72,18 +72,18 @@
                 || myTeamId == _team2.Id && opponentTeamId == _team1.Id;
         }
 
-        public bool IsAwaitingAccept(Coach coach)
+        public bool IsAwaitingResponse(Coach coach)
         {
-            if (_team1.Coach.Equals(coach))
+            var home = _team1.Coach.Equals(coach);
+
+            return (home, _matchState.State1, _matchState.State2) switch
             {
-                return MatchState.State1 == TeamState.Default && MatchState.State2 == TeamState.Accept;
-            } else if (_team2.Coach.Equals(coach))
-            {
-                return MatchState.State2 == TeamState.Default && MatchState.State1 == TeamState.Accept;
-            } else
-            {
-                return false;
-            }
+                (true, TeamState.Default, TeamState.Accept) => true,
+                (false, TeamState.Accept, TeamState.Default) => true,
+                (true, TeamState.Accept, TeamState.Start) => true,
+                (false, TeamState.Start, TeamState.Accept) => true,
+                _ => false
+            };
         }
     }
 }
