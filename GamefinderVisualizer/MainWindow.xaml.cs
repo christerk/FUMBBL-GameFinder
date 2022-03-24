@@ -18,7 +18,7 @@ namespace GamefinderVisualizer
     public partial class MainWindow : Window
     {
         private readonly MatchGraph _graph;
-        private GamefinderGraph _renderedGraph = new();
+        private readonly GamefinderGraph _renderedGraph = new();
         private readonly Dictionary<Team, DataVertex> tLookup = new();
         private readonly Dictionary<Coach, DataVertex> cLookup = new();
         private readonly Dictionary<Match, DataEdge> mLookup = new();
@@ -58,7 +58,6 @@ namespace GamefinderVisualizer
                 {
                     tNum++;
                     Team t = new(c) { Id = tNum, Name = $"Team {tNum}" };
-                    await _graph.AddTeamToCoachAsync(t, c);
                     await _graph.AddAsync(t);
                 }
             }

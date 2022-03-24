@@ -10,14 +10,13 @@ namespace GamefinderTest
 {
     public class MatchGraphTests : IDisposable, IClassFixture<GamefinderFixture>
     {
-        private GamefinderFixture _fixture;
-        private MatchGraph _graph;
+        private readonly GamefinderFixture _fixture;
+        private readonly MatchGraph _graph;
 
         public MatchGraphTests(GamefinderFixture fixture)
         {
             _fixture = fixture;
             _graph = new();
-            GamefinderModel model = new(_graph);
             _graph.Start();
         }
 
@@ -34,8 +33,8 @@ namespace GamefinderTest
         public async void CoachRemoved()
         {
             var coach = _fixture.CreateCoach(1);
-            _ = _graph.AddAsync(coach);
-            _ = _graph.RemoveAsync(coach);
+            await _graph.AddAsync(coach);
+            await _graph.RemoveAsync(coach);
             var coaches = await _graph.GetCoachesAsync();
             Assert.DoesNotContain(coach, coaches);
         }
@@ -75,7 +74,7 @@ namespace GamefinderTest
             var expectedMatch = new BasicMatch(team1, team2);
 
             var matches = await _graph.GetMatchesAsync();
-            Assert.True(matches.Count() == 1);
+            Assert.Single(matches);
             Assert.Contains(expectedMatch, matches);
         }
 
@@ -86,13 +85,11 @@ namespace GamefinderTest
             var team2 = _fixture.SimpleTeam(2);
             _ = _graph.AddAsync(team1);
             _ = _graph.AddAsync(team2);
-            _ = _graph.AddTeamToCoachAsync(team1, team1.Coach);
-            _ = _graph.AddTeamToCoachAsync(team2, team2.Coach);
 
             var expectedMatch = new BasicMatch(team1, team2);
 
             var matches = await _graph.GetMatchesAsync(team1.Coach);
-            Assert.True(matches.Count() == 1);
+            Assert.Single(matches);
             Assert.Contains(expectedMatch, matches);
 
         }
@@ -110,7 +107,7 @@ namespace GamefinderTest
             await _graph.RemoveAsync(match);
 
             var matches = await _graph.GetMatchesAsync();
-            Assert.True(matches.Count() == 0);
+            Assert.Empty(matches);
         }
         [Fact]
         public async void MatchLaunched()
@@ -158,8 +155,8 @@ namespace GamefinderTest
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);
 
-            await _graph.AddAsync(team1.Coach);
-            await _graph.AddAsync(team2.Coach);
+            await _graph.AddAsync(team1);
+            await _graph.AddAsync(team2);
 
             var match = await _graph.GetMatchAsync(team1, team2);
             Assert.NotNull(match);
@@ -174,8 +171,8 @@ namespace GamefinderTest
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);
 
-            await _graph.AddAsync(team1.Coach);
-            await _graph.AddAsync(team2.Coach);
+            await _graph.AddAsync(team1);
+            await _graph.AddAsync(team2);
 
             Assert.Single(await _graph.GetMatchesAsync(team1.Coach));
             Assert.Single(await _graph.GetMatchesAsync(team2.Coach));
@@ -192,7 +189,7 @@ namespace GamefinderTest
 
             await _graph.RemoveAsync(team1.Coach);
             Assert.Empty(await _graph.GetMatchesAsync(team2.Coach));
-            await _graph.AddAsync(team1.Coach);
+            await _graph.AddAsync(team1);
 
             var match1 = (await _graph.GetMatchesAsync(team1.Coach)).Single();
             var match2 = (await _graph.GetMatchesAsync(team2.Coach)).Single();

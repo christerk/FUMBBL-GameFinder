@@ -10,6 +10,8 @@
         public Team Team2 => _team2;
         public MatchState MatchState => _matchState;
 
+        public bool BlackboxPrioritized { get; set; } = false;
+
         public BasicMatch(Team team1, Team team2)
         {
             // Ensure team1 is always the team with the lowest ID to allow mirror matches to be .Equals() == true
