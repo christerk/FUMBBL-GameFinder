@@ -16,13 +16,15 @@ namespace Fumbbl.Gamefinder.Controllers
         private readonly ILogger<GamefinderController> _logger;
         private readonly GamefinderModel _model;
         private readonly CoachCache _coachCache;
+        private readonly TeamCache _teamCache;
 
-        public GamefinderController(FumbblApi fumbbl, ILogger<GamefinderController> logger, GamefinderModel model, CoachCache coachCache)
+        public GamefinderController(FumbblApi fumbbl, ILogger<GamefinderController> logger, GamefinderModel model, CoachCache coachCache, TeamCache teamCache)
         {
             _fumbbl = fumbbl;
             _logger = logger;
             _model = model;
             _coachCache = coachCache;
+            _teamCache = teamCache;
         }
 
         [HttpGet("Test")]

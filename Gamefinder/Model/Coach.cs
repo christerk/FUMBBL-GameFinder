@@ -4,7 +4,6 @@ namespace Fumbbl.Gamefinder.Model
 {
     public class Coach : IEquatable<Coach>, IKeyedItem<int>
     {
-        public ConcurrentHashSet<Team> _teams;
         public string Name { get; set; } = String.Empty;
         public int Id { get; set; }
 
@@ -16,26 +15,15 @@ namespace Fumbbl.Gamefinder.Model
 
         public int Key => Id;
 
-        public string Rating { get; set; }
+        public string Rating { get; set; } = String.Empty;
 
         public Coach()
         {
-            _teams = new();
         }
 
         public void Ping()
         {
             _lastEventTime = DateTime.Now;
-        }
-
-        public void Add(Team team)
-        {
-            _teams.Add(team);
-        }
-
-        public IEnumerable<Team> GetTeams()
-        {
-            return _teams;
         }
 
         public override string ToString()

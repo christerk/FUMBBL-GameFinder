@@ -8,9 +8,9 @@ namespace Fumbbl.Gamefinder.Model
     public class MatchGraph
     {
         private readonly BlockingCollection<Action> _eventQueue;
-        private readonly ConcurrentHashSet<Team> _teams;
-        private readonly ConcurrentHashSet<Coach> _coaches;
-        private readonly ConcurrentHashSet<BasicMatch> _matches;
+        private readonly TeamStore _teams;
+        private readonly CoachStore _coaches;
+        private readonly MatchStore _matches;
         private readonly DialogManager _dialogManager;
 
         public event EventHandler? CoachAdded;
@@ -25,7 +25,7 @@ namespace Fumbbl.Gamefinder.Model
         public DialogManager DialogManager => _dialogManager;
         public bool IsDialogActive(Match match) => _dialogManager.IsDialogActive(match);
 
-        private TimeSpan TickTimeout = TimeSpan.FromSeconds(1);
+        private readonly TimeSpan TickTimeout = TimeSpan.FromSeconds(1);
 
         public MatchGraph()
         {
@@ -73,12 +73,12 @@ namespace Fumbbl.Gamefinder.Model
 
         private void Tick()
         {
-            foreach (var match in _matches)
+            foreach (var match in _matches.GetMatches())
             {
                 (match as Match)?.Tick();
             }
 
-            foreach (var coach in _coaches)
+            foreach (var coach in _coaches.GetCoaches())
             {
                 if (coach.IsTimedOut)
                 {
@@ -113,7 +113,6 @@ namespace Fumbbl.Gamefinder.Model
         public async Task AddAsync(Coach coach) => await DispatchAsync(() => InternalAddCoach(coach));
         public async Task RemoveAsync(Coach coach) => await DispatchAsync(() => InternalRemoveCoach(coach));
         public async Task RemoveAsync(BasicMatch match) => await DispatchAsync(() => InternalRemoveMatch(match));
-        public async Task AddTeamToCoachAsync(Team team, Coach coach) => await DispatchAsync(() => InternalAddTeamToCoach(team, coach));
         public async Task<List<BasicMatch>> GetMatchesAsync(Coach coach) => await Serialized<Coach, List<BasicMatch>>(InternalGetMatches, coach);
         public async Task<List<BasicMatch>> GetMatchesAsync() => await Serialized<List<BasicMatch>>(InternalGetMatches);
         public async Task<List<Coach>> GetCoachesAsync() => await Serialized<List<Coach>>(InternalGetCoaches);
@@ -150,7 +149,7 @@ namespace Fumbbl.Gamefinder.Model
             coach1.Lock();
             coach2.Lock();
 
-            foreach (var m in coach1.GetTeams().Concat(coach2.GetTeams()).SelectMany(t => t.GetMatches()))
+            foreach (var m in _teams.GetTeams(coach1).Concat(_teams.GetTeams(coach2)).SelectMany(t => _matches.GetMatches(t)))
             {
                 if (!m.Equals(match) && m is Match m1)
                 {
@@ -161,22 +160,22 @@ namespace Fumbbl.Gamefinder.Model
         }
 
         private void InternalGetCoaches(TaskCompletionSource<List<Coach>> result)
-            => result.SetResult(new List<Coach>(_coaches));
+            => result.SetResult(new List<Coach>(_coaches.GetCoaches()));
 
         private void InternalGetTeams(TaskCompletionSource<List<Team>> result)
-            => result.SetResult(new List<Team>(_teams));
+            => result.SetResult(new List<Team>(_teams.GetTeams()));
 
         private void InternalGetTeams(Coach coach, TaskCompletionSource<List<Team>> result)
-            => result.SetResult(new List<Team>(coach.GetTeams()));
+            => result.SetResult(new List<Team>(_teams.GetTeams(coach)));
 
         private void InternalGetMatches(TaskCompletionSource<List<BasicMatch>> result)
-            => result.SetResult(new List<BasicMatch>(_matches));
+            => result.SetResult(new List<BasicMatch>(_matches.GetMatches()));
 
         private void InternalGetMatches(Coach coach, TaskCompletionSource<List<BasicMatch>> result)
-            => result.SetResult(new List<BasicMatch>(coach.GetTeams().SelectMany(t => t.GetMatches())));
+            => result.SetResult(new List<BasicMatch>(_teams.GetTeams(coach).SelectMany(t => _matches.GetMatches(t))));
 
         public void InternalGetMatch(Team team1, Team team2, TaskCompletionSource<BasicMatch?> result)
-            => result.SetResult(team1.GetMatches().Where(m => m.Includes(team2)).FirstOrDefault());
+            => result.SetResult(_matches.GetMatches(team1).Where(m => m.Includes(team2)).FirstOrDefault());
 
         private void InternalAddTeam(Team team)
         {
@@ -195,15 +194,13 @@ namespace Fumbbl.Gamefinder.Model
             Console.WriteLine($"Adding {team}");
             _teams.Add(team);
             TeamAdded?.Invoke(this, new TeamUpdatedArgs { Team = team });
-            foreach (var opponent in _teams)
+            foreach (var opponent in _teams.GetTeams())
             {
                 if (team is not null && team.IsOpponentAllowed(opponent) && !opponent.Coach.Locked)
                 {
                     var match = new Match(this, opponent, team);
                     Console.WriteLine($"Adding {match}");
                     _matches.Add(match);
-                    opponent.Add(match);
-                    team.Add(match);
                     MatchAdded?.Invoke(this, new MatchUpdatedArgs(match));
                 }
             }
@@ -217,14 +214,13 @@ namespace Fumbbl.Gamefinder.Model
             }
             _dialogManager.Remove(team);
 
-            foreach (var match in team.GetMatches())
+            foreach (var match in _matches.GetMatches(team))
             {
                 var t = match.GetOpponent(team);
                 if (t is not null)
                 {
                     Console.WriteLine($"Removing {match}");
-                    t.Remove(match);
-                    _matches.TryRemove(match);
+                    _matches.Remove(match);
                     if (match.MatchState.TriggerLaunchGame)
                     {
                         match.Team1.Coach.Unlock();
@@ -236,8 +232,8 @@ namespace Fumbbl.Gamefinder.Model
 
                 }
             }
-            team.RemoveMatches();
-            _teams.TryRemove(team);
+            _matches.Remove(team);
+            _teams.Remove(team);
             TeamRemoved?.Invoke(this, new TeamUpdatedArgs { Team = team });
         }
 
@@ -250,11 +246,7 @@ namespace Fumbbl.Gamefinder.Model
             _dialogManager.Remove(match);
 
             Console.WriteLine($"Removing {match}");
-            if (_matches.TryRemove(match))
-            {
-                match.Team1.Remove(match);
-                match.Team2.Remove(match);
-            }
+            _matches.Remove(match);
             if (match.MatchState.TriggerLaunchGame)
             {
                 match.Team1.Coach.Unlock();
@@ -272,11 +264,6 @@ namespace Fumbbl.Gamefinder.Model
                 _coaches.Add(coach);
                 CoachAdded?.Invoke(this, new CoachUpdatedArgs { Coach = coach });
             }
-
-            foreach (var team in coach.GetTeams())
-            {
-                InternalAddTeam(team);
-            }
         }
 
         private void InternalRemoveCoach(Coach coach)
@@ -285,17 +272,12 @@ namespace Fumbbl.Gamefinder.Model
 
             _dialogManager.Remove(coach);
 
-            foreach (var team in coach.GetTeams())
+            foreach (var team in _teams.GetTeams(coach))
             {
                 InternalRemoveTeam(team);
             }
-            _coaches.TryRemove(coach);
+            _coaches.Remove(coach);
             CoachRemoved?.Invoke(this, new CoachUpdatedArgs { Coach = coach });
-        }
-
-        private static void InternalAddTeamToCoach(Team team, Coach coach)
-        {
-            coach.Add(team);
         }
 
         #region Serialized() helper methods

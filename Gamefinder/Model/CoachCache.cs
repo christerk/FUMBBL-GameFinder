@@ -5,7 +5,7 @@ namespace Fumbbl.Gamefinder.Model
 {
     public class CoachCache : FlushableCache<int, Coach>
     {
-        private FumbblApi _fumbbl;
+        private readonly FumbblApi _fumbbl;
         public CoachCache(FumbblApi fumbbl)
         {
             _fumbbl = fumbbl;
@@ -21,20 +21,6 @@ namespace Fumbbl.Gamefinder.Model
             }
 
             var coach = apiCoach.ToModel();
-
-            var apiTeams = await _fumbbl.Coach.TeamsAsync(coachId);
-
-            if (apiTeams is not null)
-            {
-                foreach (var apiTeam in apiTeams.Teams.Where(t => string.Equals(t.IsLfg, "Yes") && string.Equals(t.Status, "Active")))
-                {
-                    var team = apiTeam.ToModel(coach);
-                    if (team is not null)
-                    {
-                        coach.Add(team);
-                    }
-                }
-            }
 
             return coach;
         }

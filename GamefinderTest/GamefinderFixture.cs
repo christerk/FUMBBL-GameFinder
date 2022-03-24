@@ -46,7 +46,6 @@ namespace GamefinderTest
                 coach = CreateCoach(teamId);
             }
             var team = new Team(coach) { Id = teamId, Name = $"Team {teamId}" };
-            coach.Add(team);
 
             return team;
         }

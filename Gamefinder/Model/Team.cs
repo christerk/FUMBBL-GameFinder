@@ -8,41 +8,23 @@ namespace Fumbbl.Gamefinder.Model
         public string Name { get; set; } = string.Empty;
         public int Id { get; set; }
 
-        public string Division { get; set; }
+        public string Division { get; set; } = string.Empty;
         public int TeamValue { get; set; }
-        public string Roster { get; set; }
+        public string Roster { get; set; } = string.Empty;
         public int RosterLogo32 { get; set; }
         public int Season { get; set; }
         public int SeasonGames { get; set; }
         public int LeagueId { get; set; }
-        public string LeagueName { get; set; }
-
-        private readonly ConcurrentHashSet<BasicMatch> _matches;
+        public string LeagueName { get; set; } = string.Empty;
 
         public Team(Coach coach)
         {
             Coach = coach;
-            _matches = new();
-        }
-
-        public void Add(Match m)
-        {
-            _matches.Add(m);
-        }
-
-        public void Remove(BasicMatch m)
-        {
-            _matches.TryRemove(m);
         }
 
         internal bool IsOpponentAllowed(Team opponent)
         {
             return !Equals(Coach, opponent.Coach);
-        }
-
-        internal IEnumerable<BasicMatch> GetMatches()
-        {
-            return _matches;
         }
 
         public override string ToString()
@@ -63,11 +45,6 @@ namespace Fumbbl.Gamefinder.Model
         public override int GetHashCode()
         {
             return HashCode.Combine("Match", Id);
-        }
-
-        public void RemoveMatches()
-        {
-            _matches.Clear();
         }
     }
 }
