@@ -69,5 +69,19 @@
             return myTeamId == _team1.Id && opponentTeamId == _team2.Id
                 || myTeamId == _team2.Id && opponentTeamId == _team1.Id;
         }
+
+        public bool IsAwaitingAccept(Coach coach)
+        {
+            if (_team1.Coach.Equals(coach))
+            {
+                return MatchState.State1 == TeamState.Default && MatchState.State2 == TeamState.Accept;
+            } else if (_team2.Coach.Equals(coach))
+            {
+                return MatchState.State2 == TeamState.Default && MatchState.State1 == TeamState.Accept;
+            } else
+            {
+                return false;
+            }
+        }
     }
 }

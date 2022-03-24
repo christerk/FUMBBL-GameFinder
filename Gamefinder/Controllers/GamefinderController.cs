@@ -98,6 +98,7 @@ namespace Fumbbl.Gamefinder.Controllers
                 var offer = o.ToUiOffer();
                 offer.ShowDialog = showDialog;
                 offer.LaunchGame = o.MatchState.TriggerLaunchGame;
+                offer.AwaitingAcceptance = o.IsAwaitingAccept(coach);
                 return offer;
             });
         }

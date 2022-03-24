@@ -7,6 +7,7 @@
         public string Id { get; set; } = string.Empty;
         public long TimeRemaining { get; set; }
         public long Lifetime { get; set; }
+        public bool AwaitingAcceptance { get; set; }
         public bool ShowDialog { get; set; }
         public bool LaunchGame { get; set; }
     }
