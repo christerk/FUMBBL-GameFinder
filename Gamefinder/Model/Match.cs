@@ -103,7 +103,7 @@
                     _ = _owningGraph.RemoveAsync(Team1.Coach);
                     _ = _owningGraph.RemoveAsync(Team2.Coach);
                 }
-                else
+                else if (!_matchState.IsDefault)
                 {
                     _ = ActAsync(TeamAction.Timeout);
                 }

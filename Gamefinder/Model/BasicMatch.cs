@@ -71,5 +71,19 @@
             return myTeamId == _team1.Id && opponentTeamId == _team2.Id
                 || myTeamId == _team2.Id && opponentTeamId == _team1.Id;
         }
+
+        public bool IsAwaitingResponse(Coach coach)
+        {
+            var home = _team1.Coach.Equals(coach);
+
+            return (home, _matchState.State1, _matchState.State2) switch
+            {
+                (true, TeamState.Default, TeamState.Accept) => true,
+                (false, TeamState.Accept, TeamState.Default) => true,
+                (true, TeamState.Accept, TeamState.Start) => true,
+                (false, TeamState.Start, TeamState.Accept) => true,
+                _ => false
+            };
+        }
     }
 }

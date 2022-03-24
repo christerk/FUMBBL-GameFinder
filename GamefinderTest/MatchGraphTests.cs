@@ -79,7 +79,7 @@ namespace GamefinderTest
         }
 
         [Fact]
-        public async void Foo()
+        public async void GetMatchesForCoach()
         {
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);

@@ -1,5 +1,6 @@
 using Fumbbl.Api;
 using Fumbbl.Gamefinder.Model;
+using Fumbbl.Gamefinder.Model.Cache;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,6 +14,7 @@ builder.Services.AddFumbbl();
 builder.Services.AddSingleton<MatchGraph>();
 builder.Services.AddSingleton<GamefinderModel>();
 builder.Services.AddSingleton<CoachCache>();
+builder.Services.AddSingleton<TeamCache>();
 
 var app = builder.Build();
 
