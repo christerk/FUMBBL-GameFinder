@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\FumbblApi\FumbblApi\FumbblApi.csproj" />
+    <ProjectReference Include="..\..\Fumbbl-Api\FumbblApi\FumbblApi.csproj" />
   </ItemGroup>
 
   <Target Name="AfterPublish" AfterTargets="Publish">
