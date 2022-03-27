@@ -106,7 +106,7 @@ namespace Fumbbl.Gamefinder.Convert
                 Division = modelTeam.Division,
                 Coach = modelTeam.Coach.ToUi(),
                 League = new UiLeague { Id = modelTeam.LeagueId, Name = modelTeam.LeagueName },
-                Roster = new UiRoster(modelTeam.Roster, modelTeam.RosterLogo64, modelTeam.RosterLogo64),
+                Roster = new UiRoster(modelTeam.Roster, modelTeam.RosterLogo32, modelTeam.RosterLogo64),
                 SeasonInfo = new UiSeasonInfo { CurrentSeason = modelTeam.Season, GamesPlayedInCurrentSeason = modelTeam.SeasonGames }
             };
         }
