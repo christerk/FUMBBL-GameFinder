@@ -168,9 +168,6 @@ namespace Fumbbl.Gamefinder.Convert
         {
             var match = modelBasicMatch as ModelMatch;
 
-            var c1 = modelBasicMatch.Team1.Coach.ToUi();
-            var c2 = modelBasicMatch.Team2.Coach.ToUi();
-
             return new UiOffer()
             {
                 Team1 = modelBasicMatch.Team1.ToUi(),
