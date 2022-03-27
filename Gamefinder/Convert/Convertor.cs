@@ -5,7 +5,6 @@ using UiRoster = Fumbbl.Gamefinder.DTO.Roster;
 using UiSeasonInfo = Fumbbl.Gamefinder.DTO.SeasonInfo;
 using UiTeam = Fumbbl.Gamefinder.DTO.Team;
 using UiOffer = Fumbbl.Gamefinder.DTO.Offer;
-using UiOfferTeam = Fumbbl.Gamefinder.DTO.OfferTeam;
 
 using ModelCoach = Fumbbl.Gamefinder.Model.Coach;
 using ModelTeam = Fumbbl.Gamefinder.Model.Team;
@@ -92,6 +91,7 @@ namespace Fumbbl.Gamefinder.Convert
             };
         }
 
+<<<<<<< HEAD
         public static UiOfferTeam ToUiOffer(this ModelTeam modelTeam)
         {
             return new UiOfferTeam
@@ -106,6 +106,8 @@ namespace Fumbbl.Gamefinder.Convert
             };
         }
 
+=======
+>>>>>>> d95512014a2a26dc6cd6af08b5fe2b17e7f36df7
         public static UiTeam ToUi(this ModelTeam modelTeam)
         {
             return new UiTeam
@@ -171,10 +173,16 @@ namespace Fumbbl.Gamefinder.Convert
         {
             var match = modelBasicMatch as ModelMatch;
 
+            var c1 = modelBasicMatch.Team1.Coach.ToUi();
+            var c2 = modelBasicMatch.Team2.Coach.ToUi();
+            Console.WriteLine($"The coach {c1.Name}, {c2.Name}");
+
             return new UiOffer()
             {
-                Team1 = modelBasicMatch.Team1.ToUiOffer(),
-                Team2 = modelBasicMatch.Team2.ToUiOffer(),
+                Team1Coach = modelBasicMatch.Team1.Coach.ToUi(),
+                Team2Coach = modelBasicMatch.Team2.Coach.ToUi(),
+                Team1 = modelBasicMatch.Team1.ToUi(),
+                Team2 = modelBasicMatch.Team2.ToUi(),
                 Id = $"{modelBasicMatch.Team1.Id} {modelBasicMatch.Team2.Id}",
                 Lifetime = ModelMatch.DEFAULT_TIMEOUT * 1000,
                 TimeRemaining = match?.TimeUntilReset ?? 0

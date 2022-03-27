@@ -99,6 +99,7 @@ namespace Fumbbl.Gamefinder.Controllers
             return offers.Select(o => {
                 var showDialog = o.Equals(dialogMatch);
                 var offer = o.ToUiOffer();
+                Console.WriteLine($"Coach is {o.Team1.Coach.Name} and {o.Team2.Coach.Name}");
                 offer.ShowDialog = showDialog;
                 offer.LaunchGame = o.MatchState.TriggerLaunchGame;
                 offer.AwaitingResponse = o.IsAwaitingResponse(coach);
