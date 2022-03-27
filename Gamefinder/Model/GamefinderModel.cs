@@ -20,7 +20,7 @@
             // Tell MatchGraph which FFB Game ID needs to be redirected to
         }
 
-        public async void ActivateAsync(Coach activatingCoach, IAsyncEnumerable<Team> activatingTeams)
+        public async void ActivateAsync(Coach activatingCoach, IEnumerable<Team> activatingTeams)
         {
             var coachExists = await _matchGraph.Contains(activatingCoach);
             if (!coachExists)
@@ -28,10 +28,8 @@
                 await _matchGraph.AddAsync(activatingCoach);
             }
             var graphTeams = (await _matchGraph.GetTeamsAsync(activatingCoach)).ToHashSet();
-            HashSet<Team> activatedTeams = new();
-            await foreach (var team in activatingTeams)
+            foreach (var team in activatingTeams)
             {
-                activatedTeams.Add(team);
                 if (!graphTeams.Contains(team))
                 {
                     await _matchGraph.AddAsync(team);
@@ -44,7 +42,7 @@
             }
             foreach (var team in graphTeams)
             {
-                if (!activatedTeams.Contains(team))
+                if (!activatingTeams.Contains(team))
                 {
                     await _matchGraph.RemoveAsync(team);
                 }

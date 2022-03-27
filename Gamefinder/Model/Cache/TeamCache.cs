@@ -11,10 +11,11 @@ namespace Fumbbl.Gamefinder.Model.Cache
             _fumbbl = fumbbl;
         }
 
-        public async IAsyncEnumerable<Team> GetTeams(Coach coach)
+        public async Task<IEnumerable<Team>> GetTeams(Coach coach)
         {
             var apiTeams = await _fumbbl.Coach.TeamsAsync(coach.Id);
 
+            List<Team> teams = new();
             if (apiTeams is not null)
             {
                 foreach (var apiTeam in apiTeams.Teams.Where(t => string.Equals(t.IsLfg, "Yes") && string.Equals(t.Status, "Active")))
@@ -22,10 +23,11 @@ namespace Fumbbl.Gamefinder.Model.Cache
                     var team = apiTeam.ToModel(coach);
                     if (team is not null)
                     {
-                        yield return team;
+                        teams.Add(team);
                     }
                 }
             }
+            return teams;
         }
     }
 }
