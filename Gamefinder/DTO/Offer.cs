@@ -2,8 +2,6 @@
 {
     public class Offer
     {
-        public Coach? Team1Coach { get; set; }
-        public Coach? Team2Coach { get; set; }
         public Team? Team1 { get; set; }
         public Team? Team2 { get; set; }
         public string Id { get; set; } = string.Empty;
