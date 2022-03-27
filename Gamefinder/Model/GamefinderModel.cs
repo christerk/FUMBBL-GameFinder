@@ -20,25 +20,35 @@
             // Tell MatchGraph which FFB Game ID needs to be redirected to
         }
 
-        public async void ActivateAsync(Coach coach, IAsyncEnumerable<Team> teams)
+        public async void ActivateAsync(Coach activatingCoach, IAsyncEnumerable<Team> activatingTeams)
         {
-            // If coach is not in graph already
-
-            //await _matchGraph.AddAsync(coach);
-
-
-            // add to graph and update teams
-
-            await foreach (var team in teams)
+            var coachExists = await _matchGraph.Contains(activatingCoach);
+            if (!coachExists)
             {
-                // if team exists, update
-
-                // else add
-                await Graph.AddAsync(team);
+                await _matchGraph.AddAsync(activatingCoach);
             }
-
-            //await _matchGraph.RemoveAsync(coach);
-            //await _matchGraph.AddAsync(coach);
+            var graphTeams = (await _matchGraph.GetTeamsAsync(activatingCoach)).ToHashSet();
+            HashSet<Team> activatedTeams = new();
+            await foreach (var team in activatingTeams)
+            {
+                activatedTeams.Add(team);
+                if (!graphTeams.Contains(team))
+                {
+                    await _matchGraph.AddAsync(team);
+                }
+                else
+                {
+                    var graphTeam = graphTeams.Where(t => t.Equals(team)).First();
+                    graphTeam.Update(team);
+                }
+            }
+            foreach (var team in graphTeams)
+            {
+                if (!activatedTeams.Contains(team))
+                {
+                    await _matchGraph.RemoveAsync(team);
+                }
+            }
         }
     }
 }

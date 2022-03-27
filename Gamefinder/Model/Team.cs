@@ -4,7 +4,7 @@ namespace Fumbbl.Gamefinder.Model
 {
     public class Team : IEquatable<Team>
     {
-        public Coach Coach { get; init; }
+        public Coach Coach { get; set; }
         public string Name { get; set; } = string.Empty;
         public int Id { get; set; }
 
@@ -46,6 +46,21 @@ namespace Fumbbl.Gamefinder.Model
         public override int GetHashCode()
         {
             return HashCode.Combine("Match", Id);
+        }
+
+        internal void Update(Team team)
+        {
+            Coach = team.Coach;
+            Name = team.Name;
+            Division = team.Division;
+            TeamValue = team.TeamValue;
+            Roster = team.Roster;
+            RosterLogo32 = team.RosterLogo32;
+            RosterLogo64 = team.RosterLogo64;
+            Season = team.Season;
+            SeasonGames = team.SeasonGames;
+            LeagueId = team.LeagueId;
+            LeagueName = team.LeagueName;
         }
     }
 }

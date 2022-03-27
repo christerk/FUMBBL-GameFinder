@@ -44,10 +44,12 @@ namespace Fumbbl.Gamefinder.Convert
 
         public static UiCoach ToUi(this ApiCoach apiCoach)
         {
-            var uiCoach = new UiCoach();
-            uiCoach.Id = apiCoach.Id;
-            uiCoach.Name = apiCoach.Name;
-            uiCoach.Rating = apiCoach.Rating;
+            var uiCoach = new UiCoach
+            {
+                Id = apiCoach.Id,
+                Name = apiCoach.Name,
+                Rating = apiCoach.Rating
+            };
 
             return uiCoach;
         }
@@ -64,9 +66,11 @@ namespace Fumbbl.Gamefinder.Convert
 
         public static ModelCoach ToModel(this UiCoach dtoCoach)
         {
-            var modelCoach = new ModelCoach();
-            modelCoach.Id = dtoCoach.Id;
-            modelCoach.Name = dtoCoach.Name;
+            var modelCoach = new ModelCoach
+            {
+                Id = dtoCoach.Id,
+                Name = dtoCoach.Name
+            };
 
             return modelCoach;
         }
@@ -82,7 +86,7 @@ namespace Fumbbl.Gamefinder.Convert
                 TeamValue = apiTeam.TeamValue,
                 Division = apiTeam.Division,
                 Roster = apiTeam.Race,
-                RosterLogo64 = apiTeam.RaceLogos.FirstOrDefault(l => l.Size == 32)?.Logo ?? UNKNOWN_LOGO_32,
+                RosterLogo32 = apiTeam.RaceLogos.FirstOrDefault(l => l.Size == 32)?.Logo ?? UNKNOWN_LOGO_32,
                 RosterLogo64 = apiTeam.RaceLogos.FirstOrDefault(l => l.Size == 64)?.Logo ?? UNKNOWN_LOGO_64,
                 Season = apiTeam.Season?.Number ?? 0,
                 SeasonGames = apiTeam.Season?.Games ?? 0,
@@ -91,23 +95,6 @@ namespace Fumbbl.Gamefinder.Convert
             };
         }
 
-<<<<<<< HEAD
-        public static UiOfferTeam ToUiOffer(this ModelTeam modelTeam)
-        {
-            return new UiOfferTeam
-            {
-                Id = modelTeam.Id,
-                Name = modelTeam.Name,
-                Coach = modelTeam.Coach.Name,
-                Race = modelTeam.Roster,
-                TeamValue = modelTeam.TeamValue,
-                RosterLogo32 = modelTeam.RosterLogo32,
-                RosterLogo64 = modelTeam.RosterLogo64,
-            };
-        }
-
-=======
->>>>>>> d95512014a2a26dc6cd6af08b5fe2b17e7f36df7
         public static UiTeam ToUi(this ModelTeam modelTeam)
         {
             return new UiTeam
@@ -130,9 +117,11 @@ namespace Fumbbl.Gamefinder.Convert
 
             if (apiTeam.LeagueId != null && apiTeam.LeagueId != 0)
             {
-                uiLeague = new UiLeague();
-                uiLeague.Id = apiTeam.LeagueId ?? 0;
-                uiLeague.Name = apiTeam.League ?? string.Empty;
+                uiLeague = new UiLeague
+                {
+                    Id = apiTeam.LeagueId ?? 0,
+                    Name = apiTeam.League ?? string.Empty
+                };
             }
 
             var logoId32 = apiTeam.RaceLogos.FirstOrDefault(l => l.Size == 32)?.Logo ?? UNKNOWN_LOGO_32;
@@ -140,29 +129,35 @@ namespace Fumbbl.Gamefinder.Convert
 
             var uiRoster = new UiRoster(apiTeam.Race, logoId32, logoId64);
 
-            var uiSeasonInfo = new UiSeasonInfo();
-            uiSeasonInfo.CurrentSeason = apiTeam.Season?.Number ?? 0;
-            uiSeasonInfo.GamesPlayedInCurrentSeason = apiTeam.Season?.Games ?? 0;
+            var uiSeasonInfo = new UiSeasonInfo
+            {
+                CurrentSeason = apiTeam.Season?.Number ?? 0,
+                GamesPlayedInCurrentSeason = apiTeam.Season?.Games ?? 0
+            };
 
-            var uiTeam = new UiTeam();
-            uiTeam.Id = apiTeam.Id;
-            uiTeam.Name = apiTeam.Name;
-            uiTeam.TeamValue = apiTeam.TeamValue;
-            uiTeam.Division = apiTeam.Division;
-            uiTeam.IsLfg = apiTeam.IsLfg == "Yes";
-            uiTeam.League = uiLeague;
-            uiTeam.Roster = uiRoster;
-            uiTeam.Coach = apiCoach.ToUi();
-            uiTeam.SeasonInfo = uiSeasonInfo;
+            var uiTeam = new UiTeam
+            {
+                Id = apiTeam.Id,
+                Name = apiTeam.Name,
+                TeamValue = apiTeam.TeamValue,
+                Division = apiTeam.Division,
+                IsLfg = apiTeam.IsLfg == "Yes",
+                League = uiLeague,
+                Roster = uiRoster,
+                Coach = apiCoach.ToUi(),
+                SeasonInfo = uiSeasonInfo
+            };
 
             return uiTeam;
         }
 
         public static ModelTeam ToModel(this UiTeam dtoTeam, ModelCoach modelCoach)
         {
-            var modelTeam = new ModelTeam(modelCoach);
-            modelTeam.Id = dtoTeam.Id;
-            modelTeam.Name = dtoTeam.Name;
+            var modelTeam = new ModelTeam(modelCoach)
+            {
+                Id = dtoTeam.Id,
+                Name = dtoTeam.Name
+            };
 
             return modelTeam;
         }

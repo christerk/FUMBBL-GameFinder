@@ -109,6 +109,7 @@ namespace Fumbbl.Gamefinder.Model
         public async Task RemoveAsync(Team team) => await DispatchAsync(() => InternalRemoveTeam(team));
         public async Task AddAsync(Coach coach) => await DispatchAsync(() => InternalAddCoach(coach));
         public async Task RemoveAsync(Coach coach) => await DispatchAsync(() => InternalRemoveCoach(coach));
+        public async Task<bool> Contains(Coach coach) => await Serialized<Coach, bool>(InternalContains, coach);
         public async Task RemoveAsync(BasicMatch match) => await DispatchAsync(() => InternalRemoveMatch(match));
         public async Task<List<BasicMatch>> GetMatchesAsync(Coach coach) => await Serialized<Coach, List<BasicMatch>>(InternalGetMatches, coach);
         public async Task<List<BasicMatch>> GetMatchesAsync() => await Serialized<List<BasicMatch>>(InternalGetMatches);
@@ -175,6 +176,10 @@ namespace Fumbbl.Gamefinder.Model
 
         public void InternalGetMatch(Team team1, Team team2, TaskCompletionSource<BasicMatch?> result)
             => result.SetResult(_matches.GetMatches(team1).Where(m => m.Includes(team2)).FirstOrDefault());
+
+        private void InternalContains(Coach coach, TaskCompletionSource<bool> result)
+            => result.SetResult(_coaches.Contains(coach));
+
 
         private void InternalAddTeam(Team team)
         {
