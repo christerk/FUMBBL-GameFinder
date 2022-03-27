@@ -5,15 +5,22 @@ namespace Fumbbl.Gamefinder.Model.Store
 {
     internal class MatchStore
     {
+        private readonly ILogger<MatchGraph> _logger;
         private readonly ConcurrentHashSet<BasicMatch> _matches;
         private readonly ConcurrentDictionary<Team, ConcurrentHashSet<BasicMatch>> _teamMatches;
 
-        public MatchStore()
+        public MatchStore(ILogger<MatchGraph> logger)
         {
+            _logger = logger;
             _matches = new();
             _teamMatches = new();
         }
 
+        internal void Clear()
+        {
+            _teamMatches.Clear();
+            _matches.Clear();
+        }
         internal IEnumerable<BasicMatch> GetMatches()
         {
             return _matches;
@@ -21,11 +28,7 @@ namespace Fumbbl.Gamefinder.Model.Store
 
         internal IEnumerable<BasicMatch> GetMatches(Team team)
         {
-            if (!_teamMatches.ContainsKey(team))
-            {
-                return Enumerable.Empty<BasicMatch>();
-            }
-            return _teamMatches[team];
+            return _teamMatches.GetValueOrDefault(team) ?? Enumerable.Empty<BasicMatch>();
         }
 
         internal bool Contains(BasicMatch match)

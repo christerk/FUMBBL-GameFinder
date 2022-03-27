@@ -20,9 +20,9 @@ namespace GamefinderTest
         [Fact]
         public void CoachEquality()
         {
-            Coach c1 = new Coach() { Id = 1, Name = "Coach 1" };
-            Coach c2 = new Coach() { Id = 2, Name = "Coach 2" };
-            Coach c3 = new Coach() { Id = 1, Name = "Another Coach 1" };
+            Coach c1 = new() { Id = 1, Name = "Coach 1" };
+            Coach c2 = new() { Id = 2, Name = "Coach 2" };
+            Coach c3 = new() { Id = 1, Name = "Another Coach 1" };
 
             Assert.Equal(c1, c1);
             Assert.NotEqual(c1, c2);
@@ -32,7 +32,7 @@ namespace GamefinderTest
         [Fact]
         public void CoachLock()
         {
-            Coach c = new Coach() { Id = 1, Name = "Coach 1" };
+            Coach c = new() { Id = 1, Name = "Coach 1" };
 
             Assert.False(c.Locked);
             c.Lock();
@@ -44,34 +44,34 @@ namespace GamefinderTest
         [Fact]
         public void TeamEquality()
         {
-            Coach c1 = new Coach() { Id = 1, Name = "Coach 1" };
-            Coach c2 = new Coach() { Id = 2, Name = "Coach 2" };
+            Coach c1 = new() { Id = 1, Name = "Coach 1" };
+            Coach c2 = new() { Id = 2, Name = "Coach 2" };
 
-            Team t1 = new Team(c1) { Id = 1 };
-            Team t2 = new Team(c1) { Id = 2 };
-            Team t3 = new Team(c1) { Id = 1 };
+            Team t1 = new(c1) { Id = 1 };
+            Team t2 = new(c1) { Id = 2 };
+            Team t3 = new(c1) { Id = 1 };
 
             Assert.Equal(t1, t1);
             Assert.NotEqual(t1, t2);
             Assert.Equal(t1, t3);
 
-            Team t4 = new Team(c2) { Id = 1, Name = "Team of another coach, but with same ID" };
+            Team t4 = new(c2) { Id = 1, Name = "Team of another coach, but with same ID" };
             Assert.Equal(t1, t4);
         }
 
         [Fact]
         public void MatchEquality()
         {
-            Coach c1 = new Coach() { Id = 1, Name = "Coach 1" };
-            Coach c2 = new Coach() { Id = 2, Name = "Coach 2" };
-            Coach c3 = new Coach() { Id = 3, Name = "Coach 3" };
+            Coach c1 = new() { Id = 1, Name = "Coach 1" };
+            Coach c2 = new() { Id = 2, Name = "Coach 2" };
+            Coach c3 = new() { Id = 3, Name = "Coach 3" };
 
             Team t1 = new Team(c1) { Id = 1 };
             Team t2 = new Team(c2) { Id = 2 };
             Team t3 = new Team(c2) { Id = 2 };
 
-            BasicMatch m1 = new BasicMatch(t1, t2);
-            BasicMatch m2 = new BasicMatch(t1, t3);
+            BasicMatch m1 = new(t1, t2);
+            BasicMatch m2 = new(t1, t3);
 
             Assert.NotNull(m1);
             Assert.NotNull(m2);
@@ -87,14 +87,14 @@ namespace GamefinderTest
         [Fact]
         public void MirroredEquality()
         {
-            Coach c1 = new Coach() { Id = 1, Name = "Coach 1" };
-            Coach c2 = new Coach() { Id = 2, Name = "Coach 2" };
+            Coach c1 = new() { Id = 1, Name = "Coach 1" };
+            Coach c2 = new() { Id = 2, Name = "Coach 2" };
 
-            Team t1 = new Team(c1) { Id = 1 };
-            Team t2 = new Team(c2) { Id = 2 };
+            Team t1 = new(c1) { Id = 1 };
+            Team t2 = new(c2) { Id = 2 };
 
-            BasicMatch m = new BasicMatch(t1, t2);
-            BasicMatch mirrored = new BasicMatch(t2, t1);
+            BasicMatch m = new(t1, t2);
+            BasicMatch mirrored = new(t2, t1);
 
             Assert.Equal(m, mirrored);
         }
@@ -102,12 +102,12 @@ namespace GamefinderTest
         [Fact]
         public void MatchOpponents()
         {
-            Coach c1 = new Coach() { Id = 1, Name = "Coach 1" };
-            Coach c2 = new Coach() { Id = 2, Name = "Coach 2" };
+            var c1 = new Coach() { Id = 1, Name = "Coach 1" };
+            var c2 = new Coach() { Id = 2, Name = "Coach 2" };
 
-            Team t1 = new Team(c1) { Id = 1 };
-            Team t2 = new Team(c2) { Id = 2 };
-            Team t3 = new Team(c2) { Id = 3 };
+            var t1 = new Team(c1) { Id = 1 };
+            var t2 = new Team(c2) { Id = 2 };
+            var t3 = new Team(c2) { Id = 3 };
 
             BasicMatch match = new BasicMatch(t1, t2);
 

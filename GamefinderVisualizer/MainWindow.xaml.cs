@@ -3,6 +3,7 @@ using Fumbbl.Gamefinder.Model.Event;
 using GamefinderVisualizer.Models;
 using GraphX.Common.Enums;
 using GraphX.Controls;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,9 +25,9 @@ namespace GamefinderVisualizer
         private readonly Dictionary<Match, DataEdge> mLookup = new();
         private readonly Rect viewportRect = new(-400, -400, 800, 800);
 
-        public MainWindow()
+        public MainWindow(ILoggerFactory loggerFactory)
         {
-            _graph = new();
+            _graph = new(loggerFactory.CreateLogger<MatchGraph>());
             GamefinderModel gameFinder = new(_graph);
 
             InitializeComponent();

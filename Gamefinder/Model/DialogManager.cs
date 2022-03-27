@@ -4,11 +4,13 @@ namespace Fumbbl.Gamefinder.Model
 {
     public class DialogManager
     {
+        private readonly ILogger<MatchGraph> _logger;
         private readonly ConcurrentDictionary<BasicMatch, StartDialog> _startDialogs;
         private readonly HashSet<Coach> _activeCoaches;
 
-        public DialogManager()
+        public DialogManager(ILogger<MatchGraph> logger)
         {
+            _logger = logger;
             _startDialogs = new();
             _activeCoaches = new();
         }
@@ -26,6 +28,12 @@ namespace Fumbbl.Gamefinder.Model
         {
             _startDialogs.TryAdd(match, new StartDialog(match));
             Rescan();
+        }
+
+        public void Clear()
+        {
+            _startDialogs?.Clear();
+            _activeCoaches?.Clear();
         }
 
         public void Rescan()

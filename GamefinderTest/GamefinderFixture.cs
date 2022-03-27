@@ -1,4 +1,6 @@
 ﻿using Fumbbl.Gamefinder.Model;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -15,7 +17,13 @@ namespace GamefinderTest
         public readonly List<Team> Teams;
         public GamefinderFixture()
         {
-            MatchGraph = new();
+            IServiceCollection serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging(builder => builder
+                .AddConsole()
+                .AddFilter(level => level >= LogLevel.Information)
+                );
+            var loggerFactory = serviceCollection.BuildServiceProvider().GetService<ILoggerFactory>();
+            MatchGraph = new(loggerFactory.CreateLogger<MatchGraph>());
             GamefinderModel = new(MatchGraph);
             Coaches = new();
             Teams = new();

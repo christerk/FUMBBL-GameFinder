@@ -4,11 +4,18 @@ namespace Fumbbl.Gamefinder.Model.Store
 {
     internal class CoachStore
     {
+        private readonly ILogger<MatchGraph> _logger;
         private readonly ConcurrentHashSet<Coach> _coaches;
 
-        public CoachStore()
+        public CoachStore(ILogger<MatchGraph> logger)
         {
+            _logger = logger;
             _coaches = new();
+        }
+
+        internal void Clear()
+        {
+            _coaches.Clear();
         }
 
         internal IEnumerable<Coach> GetCoaches()
