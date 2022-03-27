@@ -2,8 +2,10 @@
 {
     public class Offer
     {
-        public OfferTeam? Team1 { get; set; }
-        public OfferTeam? Team2 { get; set; }
+        public Coach? Team1Coach { get; set; }
+        public Coach? Team2Coach { get; set; }
+        public Team? Team1 { get; set; }
+        public Team? Team2 { get; set; }
         public string Id { get; set; } = string.Empty;
         public long TimeRemaining { get; set; }
         public long Lifetime { get; set; }
