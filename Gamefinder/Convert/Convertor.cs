@@ -170,7 +170,6 @@ namespace Fumbbl.Gamefinder.Convert
 
             var c1 = modelBasicMatch.Team1.Coach.ToUi();
             var c2 = modelBasicMatch.Team2.Coach.ToUi();
-            Console.WriteLine($"The coach {c1.Name}, {c2.Name}");
 
             return new UiOffer()
             {
