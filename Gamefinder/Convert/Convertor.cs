@@ -174,8 +174,6 @@ namespace Fumbbl.Gamefinder.Convert
 
             return new UiOffer()
             {
-                Team1Coach = modelBasicMatch.Team1.Coach.ToUi(),
-                Team2Coach = modelBasicMatch.Team2.Coach.ToUi(),
                 Team1 = modelBasicMatch.Team1.ToUi(),
                 Team2 = modelBasicMatch.Team2.ToUi(),
                 Id = $"{modelBasicMatch.Team1.Id} {modelBasicMatch.Team2.Id}",
