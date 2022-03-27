@@ -102,6 +102,7 @@ namespace Fumbbl.Gamefinder.Controllers
                 offer.ShowDialog = showDialog;
                 offer.LaunchGame = o.MatchState.TriggerLaunchGame;
                 offer.AwaitingResponse = o.IsAwaitingResponse(coach);
+                offer.CoachNamesStarted = o.CoachNamesStarted();
                 return offer;
             });
         }

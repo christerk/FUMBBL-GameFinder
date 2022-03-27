@@ -85,5 +85,22 @@
                 _ => false
             };
         }
+
+        internal IEnumerable<string> CoachNamesStarted()
+        {
+            var coachNames = new List<string>();
+
+            if (_matchState.State1.Equals(TeamState.Start))
+            {
+                coachNames.Add(Team1.Coach.Name);
+            }
+
+            if (_matchState.State2.Equals(TeamState.Start))
+            {
+                coachNames.Add(Team2.Coach.Name);
+            }
+
+            return coachNames;
+        }
     }
 }
