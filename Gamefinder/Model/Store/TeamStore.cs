@@ -7,11 +7,19 @@ namespace Fumbbl.Gamefinder.Model.Store
     {
         private readonly ConcurrentHashSet<Team> _teams;
         private readonly ConcurrentDictionary<Coach, ConcurrentHashSet<Team>> _coachTeams;
+        private readonly ILogger<MatchGraph> _logger;
 
-        public TeamStore()
+        public TeamStore(ILogger<MatchGraph> logger)
         {
             _teams = new();
             _coachTeams = new();
+            _logger = logger;
+        }
+
+        internal void Clear()
+        {
+            _coachTeams.Clear();
+            _teams.Clear();
         }
 
         internal IEnumerable<Team> GetTeams()

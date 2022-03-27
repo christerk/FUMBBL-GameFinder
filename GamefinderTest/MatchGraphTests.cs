@@ -1,4 +1,5 @@
 ﻿using Fumbbl.Gamefinder.Model;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,8 +17,7 @@ namespace GamefinderTest
         public MatchGraphTests(GamefinderFixture fixture)
         {
             _fixture = fixture;
-            _graph = new();
-            _graph.Start();
+            _graph = _fixture.MatchGraph;
         }
 
         [Fact]
@@ -208,7 +208,7 @@ namespace GamefinderTest
 
         public void Dispose()
         {
-            _graph.Stop();
+            _ = _graph.Reset();
             GC.SuppressFinalize(this);
         }
 

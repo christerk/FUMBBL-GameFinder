@@ -12,7 +12,7 @@ namespace GamefinderTest
         public DialogManagerTests(GamefinderFixture fixture)
         {
             _fixture = fixture;
-            _dialogManager = new DialogManager();
+            _dialogManager = new DialogManager(_fixture.MatchGraph.Logger);
         }
 
         [Fact]

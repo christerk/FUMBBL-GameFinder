@@ -13,6 +13,7 @@ namespace Fumbbl.Gamefinder.Model
         private readonly CoachStore _coaches;
         private readonly MatchStore _matches;
         private readonly DialogManager _dialogManager;
+        public readonly ILogger<MatchGraph> Logger;
 
         public event EventHandler? CoachAdded;
         public event EventHandler? CoachRemoved;
@@ -24,17 +25,19 @@ namespace Fumbbl.Gamefinder.Model
         public event EventHandler? MatchLaunched;
 
         public DialogManager DialogManager => _dialogManager;
+
         public bool IsDialogActive(Match match) => _dialogManager.IsDialogActive(match);
 
         private readonly TimeSpan TickTimeout = TimeSpan.FromSeconds(1);
 
-        public MatchGraph()
+        public MatchGraph(ILogger<MatchGraph> logger)
         {
-            _teams = new();
-            _coaches = new();
-            _matches = new();
+            Logger = logger;
+            _teams = new(Logger);
+            _coaches = new(Logger);
+            _matches = new(Logger);
             _eventQueue = new();
-            _dialogManager = new();
+            _dialogManager = new(Logger);
         }
 
         public void Start()
@@ -57,8 +60,9 @@ namespace Fumbbl.Gamefinder.Model
                             GraphUpdated?.Invoke((object)this, EventArgs.Empty);
                         }
                     }
-                    catch (Exception)
+                    catch (Exception e)
                     {
+                        Logger.LogError(e.Message, e);
                     }
                 }
             }));
@@ -122,23 +126,37 @@ namespace Fumbbl.Gamefinder.Model
         public async Task ClearDialogAsync(Match match) => await DispatchAsync(() => InternalClearDialog(match));
         public async Task<BasicMatch?> GetStartDialogMatch(Coach coach) => await Serialized<Coach, BasicMatch?>(InternalGetStartDialogMatch, coach);
 
+        public async Task Reset() => await DispatchAsync(() => InternalReset());
+
+        private void InternalReset()
+        {
+            _dialogManager.Clear();
+            _matches.Clear();
+            _teams.Clear();
+            _coaches.Clear();
+        }
+
         private void InternalGetStartDialogMatch(Coach coach, TaskCompletionSource<BasicMatch?> result)
         {
+            Logger.LogDebug("Getting StartDialog for coach", coach);
             result.SetResult(_dialogManager.GetActiveDialog(coach));
         }
 
         internal void InternalClearDialog(Match match)
         {
+            Logger.LogDebug("Clearing StartDialog for match", match);
             _dialogManager.Remove(match);
         }
 
         private void InternalTriggerStartDialog(Match match)
         {
+            Logger.LogDebug("Adding StartDialog for match", match);
             _dialogManager.Add(match);
         }
 
         private async Task InternalTriggerLaunchGame(BasicMatch match)
         {
+            Logger.LogDebug("Launching Match", match);
             var coach1 = match.Team1.Coach;
             var coach2 = match.Team2.Coach;
 
@@ -183,6 +201,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalAddTeam(Team team)
         {
+            Logger.LogDebug("Adding team", team);
             if (team is null || _teams.Contains(team))
             {
                 return;
@@ -209,6 +228,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalRemoveTeam(Team team)
         {
+            Logger.LogDebug("Removing team", team);
             if (team is null || !_teams.Contains(team))
             {
                 return;
@@ -239,6 +259,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalRemoveMatch(BasicMatch match)
         {
+            Logger.LogDebug("Removing Match", match);
             if (match is null || !_matches.Contains(match))
             {
                 return;
@@ -257,6 +278,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalAddCoach(Coach coach)
         {
+            Logger.LogDebug("Adding coach", coach);
             if (!_coaches.Contains(coach))
             {
                 _coaches.Add(coach);
@@ -266,6 +288,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalRemoveCoach(Coach coach)
         {
+            Logger.LogDebug("Removing coach", coach);
             _dialogManager.Remove(coach);
 
             foreach (var team in _teams.GetTeams(coach))
