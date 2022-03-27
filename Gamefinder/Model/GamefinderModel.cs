@@ -26,6 +26,7 @@
             if (!coachExists)
             {
                 await _matchGraph.AddAsync(activatingCoach);
+                activatingCoach.Ping();
             }
             var graphTeams = (await _matchGraph.GetTeamsAsync(activatingCoach)).ToHashSet();
             foreach (var team in activatingTeams)

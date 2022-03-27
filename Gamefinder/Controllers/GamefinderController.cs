@@ -86,7 +86,7 @@ namespace Fumbbl.Gamefinder.Controllers
         public async Task<IEnumerable<OfferDto>> GetOffers([FromForm] int coachId)
         {
             var coach = await _coachCache.GetOrCreateAsync(coachId);
-
+            coach?.Ping();
             if (coach == null)
             {
                 return Enumerable.Empty<OfferDto>();
