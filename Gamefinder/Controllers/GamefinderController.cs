@@ -46,12 +46,7 @@ namespace Fumbbl.Gamefinder.Controllers
                 return;
             }
 
-            _model.ActivateAsync(coach);
-
-            await foreach (var team in _teamCache.GetTeams(coach))
-            {
-                _ = _model.Graph.AddAsync(team);
-            }
+            _model.ActivateAsync(coach, _teamCache.GetTeams(coach));
         }
 
         [HttpPost("GetActivatedTeams")]

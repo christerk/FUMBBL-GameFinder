@@ -142,6 +142,8 @@ namespace Fumbbl.Gamefinder.Model
             var coach2 = match.Team2.Coach;
 
             _dialogManager.Remove(match);
+            _dialogManager.Remove(coach1);
+            _dialogManager.Remove(coach2);
 
             coach1.Lock();
             coach2.Lock();

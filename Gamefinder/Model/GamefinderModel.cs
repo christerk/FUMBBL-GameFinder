@@ -20,10 +20,25 @@
             // Tell MatchGraph which FFB Game ID needs to be redirected to
         }
 
-        public async void ActivateAsync(Coach coach)
+        public async void ActivateAsync(Coach coach, IAsyncEnumerable<Team> teams)
         {
-            await _matchGraph.RemoveAsync(coach);
-            await _matchGraph.AddAsync(coach);
+            // If coach is not in graph already
+
+            //await _matchGraph.AddAsync(coach);
+
+
+            // add to graph and update teams
+
+            await foreach (var team in teams)
+            {
+                // if team exists, update
+
+                // else add
+                await Graph.AddAsync(team);
+            }
+
+            //await _matchGraph.RemoveAsync(coach);
+            //await _matchGraph.AddAsync(coach);
         }
     }
 }

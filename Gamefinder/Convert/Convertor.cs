@@ -20,7 +20,8 @@ namespace Fumbbl.Gamefinder.Convert
 {
     public static class Convertor
     {
-        private static readonly int UNKNOWN_LOGO = 486370;
+        private static readonly int UNKNOWN_LOGO_32 = 486370;
+        private static readonly int UNKNOWN_LOGO_64 = 486371;
         #region Coach
         public static ModelCoach ToModel(this ApiCoach apiCoach)
         {
@@ -82,7 +83,8 @@ namespace Fumbbl.Gamefinder.Convert
                 TeamValue = apiTeam.TeamValue,
                 Division = apiTeam.Division,
                 Roster = apiTeam.Race,
-                RosterLogo32 = apiTeam.RaceLogos.FirstOrDefault(l => l.Size == 32)?.Logo ?? UNKNOWN_LOGO,
+                RosterLogo64 = apiTeam.RaceLogos.FirstOrDefault(l => l.Size == 32)?.Logo ?? UNKNOWN_LOGO_32,
+                RosterLogo64 = apiTeam.RaceLogos.FirstOrDefault(l => l.Size == 64)?.Logo ?? UNKNOWN_LOGO_64,
                 Season = apiTeam.Season?.Number ?? 0,
                 SeasonGames = apiTeam.Season?.Games ?? 0,
                 LeagueName = apiTeam.League ?? string.Empty,
@@ -98,7 +100,9 @@ namespace Fumbbl.Gamefinder.Convert
                 Name = modelTeam.Name,
                 Coach = modelTeam.Coach.Name,
                 Race = modelTeam.Roster,
-                TeamValue = modelTeam.TeamValue
+                TeamValue = modelTeam.TeamValue,
+                RosterLogo32 = modelTeam.RosterLogo32,
+                RosterLogo64 = modelTeam.RosterLogo64,
             };
         }
 
@@ -113,7 +117,7 @@ namespace Fumbbl.Gamefinder.Convert
                 Division = modelTeam.Division,
                 Coach = modelTeam.Coach.ToUi(),
                 League = new UiLeague { Id = modelTeam.LeagueId, Name = modelTeam.LeagueName },
-                Roster = new UiRoster(modelTeam.Roster, modelTeam.RosterLogo32),
+                Roster = new UiRoster(modelTeam.Roster, modelTeam.RosterLogo64, modelTeam.RosterLogo64),
                 SeasonInfo = new UiSeasonInfo { CurrentSeason = modelTeam.Season, GamesPlayedInCurrentSeason = modelTeam.SeasonGames }
             };
         }
@@ -122,16 +126,17 @@ namespace Fumbbl.Gamefinder.Convert
         {
             UiLeague? uiLeague = null;
 
-            if (apiTeam.LeagueId != null)
+            if (apiTeam.LeagueId != null && apiTeam.LeagueId != 0)
             {
                 uiLeague = new UiLeague();
                 uiLeague.Id = apiTeam.LeagueId ?? 0;
                 uiLeague.Name = apiTeam.League ?? string.Empty;
             }
 
-            var smallLogoId = apiTeam.RaceLogos.FirstOrDefault(l => l.Size == 32)?.Logo ?? UNKNOWN_LOGO;
+            var logoId32 = apiTeam.RaceLogos.FirstOrDefault(l => l.Size == 32)?.Logo ?? UNKNOWN_LOGO_32;
+            var logoId64 = apiTeam.RaceLogos.FirstOrDefault(l => l.Size == 64)?.Logo ?? UNKNOWN_LOGO_64;
 
-            var uiRoster = new UiRoster(apiTeam.Race, smallLogoId);
+            var uiRoster = new UiRoster(apiTeam.Race, logoId32, logoId64);
 
             var uiSeasonInfo = new UiSeasonInfo();
             uiSeasonInfo.CurrentSeason = apiTeam.Season?.Number ?? 0;

@@ -12,6 +12,7 @@ namespace Fumbbl.Gamefinder.Model
         public int TeamValue { get; set; }
         public string Roster { get; set; } = string.Empty;
         public int RosterLogo32 { get; set; }
+        public int RosterLogo64 { get; set; }
         public int Season { get; set; }
         public int SeasonGames { get; set; }
         public int LeagueId { get; set; }
