@@ -21,6 +21,10 @@ namespace Fumbbl.Gamefinder.Model.Store
 
         internal IEnumerable<BasicMatch> GetMatches(Team team)
         {
+            if (!_teamMatches.ContainsKey(team))
+            {
+                return Enumerable.Empty<BasicMatch>();
+            }
             return _teamMatches[team];
         }
 

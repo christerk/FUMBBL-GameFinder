@@ -198,6 +198,14 @@ namespace GamefinderTest
             Assert.True(match2.MatchState.IsDefault);
         }
 
+        [Fact]
+        public async void MatchesForSingleCoach()
+        {
+            var team1 = _fixture.SimpleTeam(1);
+            await _graph.AddAsync(team1);
+            Assert.Empty(await _graph.GetMatchesAsync(team1.Coach));
+        }
+
         public void Dispose()
         {
             _graph.Stop();
