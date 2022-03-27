@@ -5,11 +5,11 @@ VisualStudioVersion = 17.0.32126.317
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gamefinder", "Gamefinder\Gamefinder.csproj", "{BE2E9A28-AC52-4BA5-A2B0-62A56701B5BD}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FumbblApi", "..\FumbblApi\FumbblApi\FumbblApi.csproj", "{B4ED9529-2C1A-4F61-8F7F-C3A7B981C568}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GamefinderVisualizer", "GamefinderVisualizer\GamefinderVisualizer.csproj", "{D7A809F0-E1C2-4D0B-AA5B-D46042E83758}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GamefinderTest", "GamefinderTest\GamefinderTest.csproj", "{59F1B172-FC53-4956-B315-25072950C112}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GamefinderTest", "GamefinderTest\GamefinderTest.csproj", "{59F1B172-FC53-4956-B315-25072950C112}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FumbblApi", "..\Fumbbl-Api\FumbblApi\FumbblApi.csproj", "{9BF24A95-3842-4AF2-B76B-9877CB906A76}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,10 +21,6 @@ Global
 		{BE2E9A28-AC52-4BA5-A2B0-62A56701B5BD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BE2E9A28-AC52-4BA5-A2B0-62A56701B5BD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BE2E9A28-AC52-4BA5-A2B0-62A56701B5BD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B4ED9529-2C1A-4F61-8F7F-C3A7B981C568}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B4ED9529-2C1A-4F61-8F7F-C3A7B981C568}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B4ED9529-2C1A-4F61-8F7F-C3A7B981C568}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B4ED9529-2C1A-4F61-8F7F-C3A7B981C568}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D7A809F0-E1C2-4D0B-AA5B-D46042E83758}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{D7A809F0-E1C2-4D0B-AA5B-D46042E83758}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D7A809F0-E1C2-4D0B-AA5B-D46042E83758}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -33,6 +29,10 @@ Global
 		{59F1B172-FC53-4956-B315-25072950C112}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{59F1B172-FC53-4956-B315-25072950C112}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{59F1B172-FC53-4956-B315-25072950C112}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BF24A95-3842-4AF2-B76B-9877CB906A76}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BF24A95-3842-4AF2-B76B-9877CB906A76}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BF24A95-3842-4AF2-B76B-9877CB906A76}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BF24A95-3842-4AF2-B76B-9877CB906A76}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
