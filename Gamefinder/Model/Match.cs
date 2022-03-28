@@ -23,6 +23,7 @@
 
         public async Task ActAsync(TeamAction action, Team? team = default)
         {
+            _owningGraph.Logger.LogDebug($"{this} action : {action} by {team}");
             await _owningGraph.DispatchAsync(async () => await InternalAct(action, team));
         }
 
@@ -100,6 +101,7 @@
             {
                 if (_matchState.TriggerLaunchGame)
                 {
+                    _owningGraph.Logger.LogDebug($"Removing started match {this}");
                     _ = _owningGraph.RemoveAsync(Team1.Coach);
                     _ = _owningGraph.RemoveAsync(Team2.Coach);
                 }

@@ -7,10 +7,6 @@ namespace Fumbbl.Gamefinder.Model
         public string Name { get; set; } = String.Empty;
         public int Id { get; set; }
 
-        public DateTime _lastEventTime = DateTime.Now;
-
-        public bool IsTimedOut => (DateTime.Now - _lastEventTime).TotalSeconds > 4;
-
         public bool Locked { get; private set; } = false;
 
         public int Key => Id;
@@ -19,11 +15,6 @@ namespace Fumbbl.Gamefinder.Model
 
         public Coach()
         {
-        }
-
-        public void Ping()
-        {
-            _lastEventTime = DateTime.Now;
         }
 
         public override string ToString()

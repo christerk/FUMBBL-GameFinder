@@ -102,7 +102,7 @@ namespace GamefinderVisualizer
                         }
                     }
                 }
-                c.Ping();
+                _graph.Ping(c);
             }
         }
 

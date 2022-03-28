@@ -86,12 +86,12 @@ namespace Fumbbl.Gamefinder.Controllers
         public async Task<IEnumerable<OfferDto>> GetOffers([FromForm] int coachId)
         {
             var coach = await _coachCache.GetOrCreateAsync(coachId);
-            coach?.Ping();
             if (coach == null)
             {
                 return Enumerable.Empty<OfferDto>();
             }
 
+            _model.Graph.Ping(coach);
             var dialogMatch = await _model.Graph.GetStartDialogMatch(coach);
 
             var offers = (await _model.Graph.GetMatchesAsync(coach)).Where(m => m.MatchState.IsOffer);

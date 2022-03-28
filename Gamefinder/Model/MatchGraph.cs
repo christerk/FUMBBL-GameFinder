@@ -82,14 +82,20 @@ namespace Fumbbl.Gamefinder.Model
 
             foreach (var coach in _coaches.GetCoaches())
             {
-                if (coach.IsTimedOut)
+                if (_coaches.IsTimedOut(coach))
                 {
+                    Logger.LogDebug($"Timed out {coach}");
                     _ = RemoveAsync(coach);
                 }
             }
         }
 
         private void Dispatch(Action action) => _eventQueue.Add(action);
+
+        public void Ping(Coach coach)
+        {
+            _coaches.Ping(coach);
+        }
 
         public Task DispatchAsync(Action action)
         {
@@ -138,25 +144,24 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalGetStartDialogMatch(Coach coach, TaskCompletionSource<BasicMatch?> result)
         {
-            Logger.LogDebug("Getting StartDialog for coach", coach);
             result.SetResult(_dialogManager.GetActiveDialog(coach));
         }
 
         internal void InternalClearDialog(Match match)
         {
-            Logger.LogDebug("Clearing StartDialog for match", match);
+            Logger.LogDebug($"Clearing StartDialog for match {match}");
             _dialogManager.Remove(match);
         }
 
         private void InternalTriggerStartDialog(Match match)
         {
-            Logger.LogDebug("Adding StartDialog for match", match);
+            Logger.LogDebug($"Adding StartDialog for match {match}");
             _dialogManager.Add(match);
         }
 
         private async Task InternalTriggerLaunchGame(BasicMatch match)
         {
-            Logger.LogDebug("Launching Match", match);
+            Logger.LogDebug($"Launching Match {match}");
             var coach1 = match.Team1.Coach;
             var coach2 = match.Team2.Coach;
 
@@ -201,7 +206,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalAddTeam(Team team)
         {
-            Logger.LogDebug("Adding team", team);
+            Logger.LogDebug($"Adding team {team}");
             if (team is null || _teams.Contains(team))
             {
                 return;
@@ -228,7 +233,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalRemoveTeam(Team team)
         {
-            Logger.LogDebug("Removing team", team);
+            Logger.LogDebug($"Removing team {team}");
             if (team is null || !_teams.Contains(team))
             {
                 return;
@@ -259,7 +264,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalRemoveMatch(BasicMatch match)
         {
-            Logger.LogDebug("Removing Match", match);
+            Logger.LogDebug($"Removing Match {match}");
             if (match is null || !_matches.Contains(match))
             {
                 return;
@@ -278,7 +283,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalAddCoach(Coach coach)
         {
-            Logger.LogDebug("Adding coach", coach);
+            Logger.LogDebug($"Adding coach {coach}");
             if (!_coaches.Contains(coach))
             {
                 _coaches.Add(coach);
@@ -288,7 +293,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private void InternalRemoveCoach(Coach coach)
         {
-            Logger.LogDebug("Removing coach", coach);
+            Logger.LogDebug($"Removing coach {coach}");
             _dialogManager.Remove(coach);
 
             foreach (var team in _teams.GetTeams(coach))
