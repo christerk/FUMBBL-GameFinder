@@ -1,4 +1,6 @@
-﻿namespace Fumbbl.Gamefinder.Model
+﻿using Fumbbl.Gamefinder.Model.Event;
+
+namespace Fumbbl.Gamefinder.Model
 {
     public class GamefinderModel
     {
@@ -15,6 +17,16 @@
 
         private void MatchLaunched(object? sender, EventArgs e)
         {
+            if (e is MatchUpdatedArgs matchEvent)
+            {
+                var coach1 = matchEvent?.Match?.Team1.Coach;
+                var coach2 = matchEvent?.Match?.Team1.Coach;
+                if (coach1 != null && coach2 != null)
+                {
+                    _matchGraph.DialogManager.Remove(coach1);
+                    _matchGraph.DialogManager.Remove(coach2);
+                }
+            }
             // Call to FUMBBL API to start the game
 
             // Tell MatchGraph which FFB Game ID needs to be redirected to
