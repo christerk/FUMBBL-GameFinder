@@ -98,10 +98,11 @@ namespace Fumbbl.Gamefinder.Controllers
             var dialogMatch = await _model.Graph.GetStartDialogMatch(coach);
 
             return offers.Select(o => {
-                var showDialog = o.Equals(dialogMatch);
+                var launchGame = o.MatchState.TriggerLaunchGame;
+                var showDialog = o.Equals(dialogMatch) && !launchGame;
                 var offer = o.ToUiOffer();
                 offer.ShowDialog = showDialog;
-                offer.LaunchGame = o.MatchState.TriggerLaunchGame;
+                offer.LaunchGame = launchGame;
                 offer.AwaitingResponse = o.IsAwaitingResponse(coach);
                 offer.CoachNamesStarted = o.CoachNamesStarted();
                 return offer;
