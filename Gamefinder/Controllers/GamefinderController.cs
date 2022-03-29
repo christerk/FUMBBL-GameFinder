@@ -92,9 +92,10 @@ namespace Fumbbl.Gamefinder.Controllers
             }
 
             _model.Graph.Ping(coach);
-            var dialogMatch = await _model.Graph.GetStartDialogMatch(coach);
 
             var offers = (await _model.Graph.GetMatchesAsync(coach)).Where(m => m.MatchState.IsOffer);
+
+            var dialogMatch = await _model.Graph.GetStartDialogMatch(coach);
 
             return offers.Select(o => {
                 var showDialog = o.Equals(dialogMatch);
