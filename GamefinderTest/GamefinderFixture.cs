@@ -15,6 +15,8 @@ namespace GamefinderTest
         public readonly MatchGraph MatchGraph;
         public readonly List<Coach> Coaches;
         public readonly List<Team> Teams;
+        public ILoggerFactory? LoggerFactory { get; }
+
         public GamefinderFixture()
         {
             IServiceCollection serviceCollection = new ServiceCollection();
@@ -22,9 +24,9 @@ namespace GamefinderTest
                 .AddConsole()
                 .AddFilter(level => level >= LogLevel.Information)
                 );
-            var loggerFactory = serviceCollection.BuildServiceProvider().GetService<ILoggerFactory>();
-            MatchGraph = new(loggerFactory.CreateLogger<MatchGraph>());
-            GamefinderModel = new(MatchGraph);
+            LoggerFactory = serviceCollection.BuildServiceProvider().GetService<ILoggerFactory>();
+            EventQueue queue = new EventQueue(LoggerFactory.CreateLogger<EventQueue>());
+            GamefinderModel = new(queue, LoggerFactory);
             GamefinderModel.Start();
             Coaches = new();
             Teams = new();

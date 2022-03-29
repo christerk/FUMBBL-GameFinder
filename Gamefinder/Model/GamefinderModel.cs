@@ -6,11 +6,12 @@ namespace Fumbbl.Gamefinder.Model
     {
         private readonly MatchGraph _matchGraph;
         private EventQueue _eventQueue;
+        public MatchGraph Graph => _matchGraph;
 
-        public GamefinderModel(MatchGraph matchGraph, ILogger<GamefinderModel> logger)
+        public GamefinderModel(EventQueue eventQueue, ILoggerFactory loggerFactory)
         {
-            _eventQueue = new(logger);
-            _matchGraph = matchGraph;
+            _eventQueue = eventQueue;
+            _matchGraph = new MatchGraph(loggerFactory, eventQueue);
             _matchGraph.MatchLaunched += MatchLaunched;
             Start();
         }

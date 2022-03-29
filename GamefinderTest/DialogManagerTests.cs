@@ -1,4 +1,5 @@
 using Fumbbl.Gamefinder.Model;
+using Microsoft.Extensions.Logging;
 using System;
 using Xunit;
 
@@ -12,7 +13,7 @@ namespace GamefinderTest
         public DialogManagerTests(GamefinderFixture fixture)
         {
             _fixture = fixture;
-            _dialogManager = new DialogManager(_fixture.MatchGraph.Logger);
+            _dialogManager = new DialogManager(_fixture.LoggerFactory);
         }
 
         [Fact]

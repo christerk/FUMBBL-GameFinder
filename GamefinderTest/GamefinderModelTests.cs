@@ -18,7 +18,7 @@ namespace GamefinderTest
         {
             _fixture = fixture;
             _model = _fixture.GamefinderModel;
-            _graph = _fixture.MatchGraph;
+            _graph = _model.Graph;
         }
 
         [Fact]

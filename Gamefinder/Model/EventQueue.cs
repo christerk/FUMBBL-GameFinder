@@ -11,7 +11,7 @@ namespace Fumbbl.Gamefinder.Model
 
         public int TickTimeout { get; set; } = 1000;
 
-        public EventQueue(ILogger logger)
+        public EventQueue(ILogger<EventQueue> logger)
         {
             _eventQueue = new();
             _logger = logger;

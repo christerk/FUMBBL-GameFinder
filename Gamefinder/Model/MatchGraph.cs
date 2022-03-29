@@ -29,23 +29,23 @@ namespace Fumbbl.Gamefinder.Model
         public bool IsDialogActive(Match match) => _dialogManager.IsDialogActive(match);
 
         private readonly TimeSpan TickTimeout = TimeSpan.FromSeconds(1);
-        private bool _started;
 
-        public MatchGraph(ILogger<MatchGraph> logger)
+        public MatchGraph(ILoggerFactory loggerFactory, EventQueue eventQueue)
         {
-            Logger = logger;
+            Logger = loggerFactory.CreateLogger<MatchGraph>();
             _teams = new(Logger);
             _coaches = new(Logger);
             _matches = new(Logger);
-            _dialogManager = new(Logger);
-            _eventQueue = new(Logger);
-            _eventQueue.Tick += (sender, args) =>
-            {
-                Tick();
-                GraphUpdated?.Invoke((object)this, EventArgs.Empty);
-            };
+            _dialogManager = new(loggerFactory);
+            _eventQueue = eventQueue;
+            _eventQueue.Tick += HandleTick;
         }
 
+        private void HandleTick(object? sender, EventArgs e)
+        {
+            Tick();
+            GraphUpdated?.Invoke((object)this, EventArgs.Empty);
+        }
 
         private void Tick()
         {
