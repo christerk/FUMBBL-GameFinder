@@ -68,22 +68,6 @@ namespace Fumbbl.Gamefinder.Model
         {
             _coaches.Ping(coach);
         }
-        /*
-        public async Task<bool> Contains(Coach coach) => await Serialized<Coach, bool>(InternalContains, coach);
-        public async Task RemoveAsync(BasicMatch match) => await DispatchAsync(() => InternalRemoveMatch(match));
-        public async Task<List<BasicMatch>> GetMatchesAsync(Coach coach) => await Serialized<Coach, List<BasicMatch>>(InternalGetMatches, coach);
-        public async Task<List<BasicMatch>> GetMatchesAsync() => await Serialized<List<BasicMatch>>(InternalGetMatches);
-        public async Task<List<Coach>> GetCoachesAsync() => await Serialized<List<Coach>>(InternalGetCoaches);
-        public async Task<List<Team>> GetTeamsAsync() => await Serialized<List<Team>>(InternalGetTeams);
-        public async Task<List<Team>> GetTeamsAsync(Coach coach) => await Serialized<Coach, List<Team>>(InternalGetTeams, coach);
-        public async Task<BasicMatch?> GetMatchAsync(Team team1, Team team2) => await Serialized<Team, Team, BasicMatch?>(InternalGetMatch, team1, team2);
-        public async Task TriggerLaunchGameAsync(BasicMatch match) => await DispatchAsync(() => InternalTriggerLaunchGame(match));
-        public async Task TriggerStartDialogAsync(Match match) => await DispatchAsync(() => InternalTriggerStartDialog(match));
-        public async Task ClearDialogAsync(Match match) => await DispatchAsync(() => InternalClearDialog(match));
-        public async Task<BasicMatch?> GetStartDialogMatch(Coach coach) => await Serialized<Coach, BasicMatch?>(InternalGetStartDialogMatch, coach);
-
-        public async Task Reset() => await DispatchAsync(() => InternalReset());
-        */
 
         public void Reset()
         {
