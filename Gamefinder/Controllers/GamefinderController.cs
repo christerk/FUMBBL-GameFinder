@@ -59,7 +59,7 @@ namespace Fumbbl.Gamefinder.Controllers
                 return Enumerable.Empty<TeamDto>();
             }
 
-            var teams = await _model.Graph.GetTeamsAsync(coach);
+            IEnumerable<Team> teams = await _model.GetActivatedTeamsAsync(coach);
 
             return teams.Select(t => t.ToUi());
         }
@@ -67,15 +67,13 @@ namespace Fumbbl.Gamefinder.Controllers
         [HttpPost("Opponents")]
         public async Task<IEnumerable<OpponentDto>> OpponentsAsync([FromForm] int coachId)
         {
-            var coaches = await _model.Graph.GetCoachesAsync();
+            var data = await _model.GetCoachesAndTeams();
 
             var opponents = new List<OpponentDto>();
-
-            foreach (var coach in coaches)
+            foreach (var (coach, teams) in data)
             {
                 var opponent = coach.ToOpponent();
-                opponent.Teams = (await _model.Graph.GetTeamsAsync(coach)).Select(t => t.ToUi());
-
+                opponent.Teams = teams.Select(team => team.ToUi());
                 opponents.Add(opponent);
             }
 
@@ -95,20 +93,20 @@ namespace Fumbbl.Gamefinder.Controllers
                 return Enumerable.Empty<OfferDto>();
             }
 
-            _model.Graph.Ping(coach);
-            var dialogMatch = await _model.Graph.GetStartDialogMatch(coach);
+            var matches = await _model.GetMatches(coach);
 
-            var offers = (await _model.Graph.GetMatchesAsync(coach)).Where(m => m.MatchState.IsOffer);
-
-            return offers.Select(o => {
-                var showDialog = o.Equals(dialogMatch);
-                var offer = o.ToUiOffer();
-                offer.ShowDialog = showDialog;
-                offer.LaunchGame = o.MatchState.TriggerLaunchGame;
-                offer.AwaitingResponse = o.IsAwaitingResponse(coach);
-                offer.CoachNamesStarted = o.CoachNamesStarted();
-                return offer;
-            });
+            return matches
+                .Where(m => m.Key.MatchState.IsOffer)
+                .Select(m =>
+                {
+                    var (match, info) = m;
+                    var offer = match.ToUiOffer();
+                    offer.ShowDialog = info.ShowDialog;
+                    offer.LaunchGame = match.MatchState.TriggerLaunchGame;
+                    offer.AwaitingResponse = match.IsAwaitingResponse(coach);
+                    offer.CoachNamesStarted = match.CoachNamesStarted();
+                    return offer;
+                });
         }
 
         [HttpPost("MakeOffer")]
@@ -117,13 +115,7 @@ namespace Fumbbl.Gamefinder.Controllers
             var coach = await _coachCache.GetOrCreateAsync(coachId);
             if (coach != null)
             {
-                var match = (await _model.Graph.GetMatchesAsync(coach)).SingleOrDefault(m => m.IsBetween(myTeamId, opponentTeamId)) as Match;
-                var ownTeam = match?.Team1.Id == myTeamId ? match?.Team1 : match?.Team2;
-
-                if (match != null && ownTeam != null && ownTeam.Coach.Id == coachId)
-                {
-                    await match.ActAsync(TeamAction.Accept, ownTeam);
-                }
+                await _model.MakeOffer(coach, myTeamId, opponentTeamId);
             }
         }
 
@@ -133,13 +125,7 @@ namespace Fumbbl.Gamefinder.Controllers
             var coach = await _coachCache.GetOrCreateAsync(coachId);
             if (coach != null)
             {
-                var match = (await _model.Graph.GetMatchesAsync(coach)).SingleOrDefault(m => m.IsBetween(myTeamId, opponentTeamId)) as Match;
-                var ownTeam = match?.Team1.Id == myTeamId ? match?.Team1 : match?.Team2;
-
-                if (match != null && ownTeam != null && ownTeam.Coach.Id == coachId)
-                {
-                    await match.ActAsync(TeamAction.Cancel, ownTeam);
-                }
+                await _model.CancelOffer(coach, myTeamId, opponentTeamId);
             }
         }
 
@@ -149,13 +135,7 @@ namespace Fumbbl.Gamefinder.Controllers
             var coach = await _coachCache.GetOrCreateAsync(coachId);
             if (coach != null)
             {
-                var match = (await _model.Graph.GetMatchesAsync(coach)).SingleOrDefault(m => m.IsBetween(myTeamId, opponentTeamId)) as Match;
-                var ownTeam = match?.Team1.Id == myTeamId ? match?.Team1 : match?.Team2;
-
-                if (match != null && ownTeam != null && ownTeam.Coach.Id == coachId)
-                {
-                    await match.ActAsync(TeamAction.Start, ownTeam);
-                }
+                await _model.StartGame(coach, myTeamId, opponentTeamId);
             }
         }
 

@@ -27,13 +27,13 @@
             _ => false
         };
 
-        private Func<Task>? ClearDialog(BasicMatch match) => async () => await match.ClearDialogAsync();
-        private Func<Task>? TriggerStart(BasicMatch match) => async () => await match.TriggerStartAsync();
-        private Func<Task>? TriggerLaunch(BasicMatch match) => async () => await match.TriggerLaunchAsync();
+        private Action? ClearDialog(BasicMatch match) => () => match.ClearDialog();
+        private Action? TriggerStart(BasicMatch match) => () => match.TriggerStart();
+        private Action? TriggerLaunch(BasicMatch match) => () => match.TriggerLaunch();
 
-        public async Task<bool> ActAsync(BasicMatch match, MatchAction action)
+        public bool Act(BasicMatch match, MatchAction action)
         {
-            (TeamState new1, TeamState new2, Func<Task>? trigger) = (State1, State2, action) switch
+            (TeamState new1, TeamState new2, Action? trigger) = (State1, State2, action) switch
             {
                 (_, _, MatchAction.Timeout) => (TeamState.Default, TeamState.Default, ClearDialog(match)),
                 (TeamState.Hidden, TeamState.Hidden, _) => (TeamState.Hidden, TeamState.Hidden, null), // Stop pattern matching
@@ -61,7 +61,7 @@
 
             if (trigger != null)
             {
-                await trigger.Invoke();
+                trigger.Invoke();
             }
 
             return true;

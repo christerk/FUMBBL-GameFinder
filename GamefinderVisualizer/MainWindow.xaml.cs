@@ -52,26 +52,26 @@ namespace GamefinderVisualizer
             {
                 cNum++;
                 Coach c = new() { Id = cNum, Name = $"Coach {cNum}" };
-                await _graph.AddAsync(c);
+                _graph.Add(c);
 
                 var numTeams = r.Next(3, 6) / 2;
                 for (var i = 0; i < numTeams; i++)
                 {
                     tNum++;
                     Team t = new(c) { Id = tNum, Name = $"Team {tNum}" };
-                    await _graph.AddAsync(t);
+                    _graph.Add(t);
                 }
             }
 
             if (coaches.Count > maxCoaches)
             {
-                await _graph.RemoveAsync(coaches.First());
+                _graph.Remove(coaches.First());
             }
 
             foreach (var c in coaches.ToArray())
             {
-                var matches = await _graph.GetMatchesAsync(c);
-                if (matches.Count > 0)
+                var matches = _graph.GetMatches(c).ToList();
+                if (matches.Count() > 0)
                 {
                     var launchedMatch = matches.FirstOrDefault(m => m?.MatchState?.TriggerLaunchGame ?? false);
 
@@ -87,17 +87,17 @@ namespace GamefinderVisualizer
 
                         if (!match.MatchState.IsDefault && r.Next(20) == 0)
                         {
-                            await match.ActAsync(TeamAction.Cancel, ownTeam);
+                            match.Act(TeamAction.Cancel, ownTeam);
                         }
                         else
                         {
                             if (match.MatchState.TriggerStartDialog)
                             {
-                                await match.ActAsync(TeamAction.Start, ownTeam);
+                                match.Act(TeamAction.Start, ownTeam);
                             }
                             else
                             {
-                                await match.ActAsync(TeamAction.Accept, ownTeam);
+                                match.Act(TeamAction.Accept, ownTeam);
                             }
                         }
                     }
@@ -115,8 +115,6 @@ namespace GamefinderVisualizer
             _graph.MatchAdded += Graph_MatchAdded;
             _graph.MatchRemoved += Graph_MatchRemoved;
             _graph.GraphUpdated += async (s, e) => await Graph_UpdatedAsync(s, e);
-
-            _graph.Start();
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)

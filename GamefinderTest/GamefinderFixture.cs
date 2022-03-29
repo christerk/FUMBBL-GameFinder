@@ -25,8 +25,10 @@ namespace GamefinderTest
             var loggerFactory = serviceCollection.BuildServiceProvider().GetService<ILoggerFactory>();
             MatchGraph = new(loggerFactory.CreateLogger<MatchGraph>());
             GamefinderModel = new(MatchGraph);
+            GamefinderModel.Start();
             Coaches = new();
             Teams = new();
+
 
             int teamId = 0;
             for (var i=0; i<20; i++)
@@ -38,8 +40,6 @@ namespace GamefinderTest
                     Teams.Add(new Team(Coaches[i]) { Id = teamId, Name=$"Team {teamId}" } );
                 }
             }
-
-            MatchGraph.Start();
         }
 
         public Coach CreateCoach(int id)
@@ -60,7 +60,7 @@ namespace GamefinderTest
 
         public void Dispose()
         {
-            MatchGraph.Stop();
+            GamefinderModel.Stop();
         }
     }
 }

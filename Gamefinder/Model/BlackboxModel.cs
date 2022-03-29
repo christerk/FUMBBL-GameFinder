@@ -13,9 +13,9 @@
             _matches = new List<BasicMatch>();
         }
 
-        public async Task GenerateRound()
+        public void GenerateRound()
         {
-            _matches = await _matchGraph.GetMatchesAsync();
+            _matches = _matchGraph.GetMatches().ToList();
             MarkPrioritizedGames();
         }
 

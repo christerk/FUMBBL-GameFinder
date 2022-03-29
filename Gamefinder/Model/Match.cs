@@ -9,7 +9,7 @@
         private readonly MatchGraph _owningGraph;
         private DateTime _resetTimestamp;
 
-        public MatchGraph Graph => _owningGraph;
+        private MatchGraph Graph => _owningGraph;
 
         public bool IsDialogActive => MatchState.TriggerStartDialog && _owningGraph.IsDialogActive(this);
 
@@ -21,14 +21,9 @@
             _owningGraph = owningGraph;
         }
 
-        public async Task ActAsync(TeamAction action, Team? team = default)
+        public void Act(TeamAction action, Team? team = default)
         {
             _owningGraph.Logger.LogDebug($"{this} action : {action} by {team}");
-            await _owningGraph.DispatchAsync(async () => await InternalAct(action, team));
-        }
-
-        private async Task InternalAct(TeamAction action, Team? team)
-        {
             var activeDialog = _owningGraph.IsDialogActive(this);
             int teamNumber = _team1.Equals(team) ? 1 : 2;
             var matchAction = (action, teamNumber, activeDialog) switch
@@ -47,7 +42,7 @@
                 return;
             }
 
-            var changed = await _matchState.ActAsync(this, matchAction);
+            var changed = _matchState.Act(this, matchAction);
 
             if (changed && action != TeamAction.Timeout)
             {
@@ -57,14 +52,14 @@
             }
         }
 
-        public async Task TriggerStartDialogAsync()
+        public void TriggerStartDialogAsync()
         {
-            await _owningGraph.TriggerStartDialogAsync(this);
+           _owningGraph.TriggerStartDialog(this);
         }
 
-        public async Task TriggerLaunchGame()
+        public void TriggerLaunchGame()
         {
-            await _owningGraph.TriggerLaunchGameAsync(this);
+            _owningGraph.TriggerLaunchGame(this);
         }
 
         private static int GetTimeout(MatchState state)
@@ -82,17 +77,17 @@
             return DEFAULT_TIMEOUT;
         }
 
-        public override async Task TriggerLaunchAsync()
+        public override void TriggerLaunch()
         {
-            await Graph.TriggerLaunchGameAsync(this);
+            Graph.TriggerLaunchGame(this);
         }
-        public override async Task TriggerStartAsync()
+        public override void TriggerStart()
         {
-            await Graph.TriggerStartDialogAsync(this);
+            Graph.TriggerStartDialog(this);
         }
-        public override async Task ClearDialogAsync()
+        public override void ClearDialog()
         {
-            await Graph.ClearDialogAsync(this);
+            Graph.ClearDialog(this);
         }
 
         internal void Tick()
@@ -102,12 +97,12 @@
                 if (_matchState.TriggerLaunchGame)
                 {
                     _owningGraph.Logger.LogDebug($"Removing started match {this}");
-                    _ = _owningGraph.RemoveAsync(Team1.Coach);
-                    _ = _owningGraph.RemoveAsync(Team2.Coach);
+                    _owningGraph.Remove(Team1.Coach);
+                    _owningGraph.Remove(Team2.Coach);
                 }
                 else if (!_matchState.IsDefault)
                 {
-                    _ = ActAsync(TeamAction.Timeout);
+                    Act(TeamAction.Timeout);
                 }
             }
         }

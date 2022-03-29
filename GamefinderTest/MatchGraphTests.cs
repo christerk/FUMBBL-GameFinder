@@ -21,96 +21,96 @@ namespace GamefinderTest
         }
 
         [Fact]
-        public async void CoachAdded()
+        public void CoachAdded()
         {
             var coach = _fixture.CreateCoach(1);
-            _ = _graph.AddAsync(coach);
-            var coaches = await _graph.GetCoachesAsync();
+            _graph.Add(coach);
+            var coaches = _graph.GetCoaches();
             Assert.Contains(coach, coaches);
         }
 
         [Fact]
-        public async void CoachRemoved()
+        public void CoachRemoved()
         {
             var coach = _fixture.CreateCoach(1);
-            await _graph.AddAsync(coach);
-            await _graph.RemoveAsync(coach);
-            var coaches = await _graph.GetCoachesAsync();
+            _graph.Add(coach);
+            _graph.Remove(coach);
+            var coaches = _graph.GetCoaches();
             Assert.DoesNotContain(coach, coaches);
         }
 
         [Fact]
-        public async void TeamAdded()
+        public void TeamAdded()
         {
             var team = _fixture.SimpleTeam(1);
-            _ = _graph.AddAsync(team);
-            var teams = await _graph.GetTeamsAsync();
+            _graph.Add(team);
+            var teams = _graph.GetTeams();
             Assert.Contains(team, teams);
         }
 
         [Fact]
-        public async void TeamRemoved()
+        public void TeamRemoved()
         {
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);
-            _ = _graph.AddAsync(team1);
-            _ = _graph.AddAsync(team2);
-            _ = _graph.RemoveAsync(team1);
-            var teams = await _graph.GetTeamsAsync();
+            _graph.Add(team1);
+            _graph.Add(team2);
+            _graph.Remove(team1);
+            var teams = _graph.GetTeams();
             Assert.DoesNotContain(team1, teams);
 
-            var matches = await _graph.GetMatchesAsync();
+            var matches = _graph.GetMatches();
             Assert.DoesNotContain(new BasicMatch(team1, team2), matches);
         }
 
         [Fact]
-        public async void MatchAdded()
+        public void MatchAdded()
         {
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);
-            _ = _graph.AddAsync(team1);
-            _ = _graph.AddAsync(team2);
+            _graph.Add(team1);
+            _graph.Add(team2);
 
             var expectedMatch = new BasicMatch(team1, team2);
 
-            var matches = await _graph.GetMatchesAsync();
+            var matches = _graph.GetMatches();
             Assert.Single(matches);
             Assert.Contains(expectedMatch, matches);
         }
 
         [Fact]
-        public async void GetMatchesForCoach()
+        public void GetMatchesForCoach()
         {
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);
-            _ = _graph.AddAsync(team1);
-            _ = _graph.AddAsync(team2);
+            _graph.Add(team1);
+            _graph.Add(team2);
 
             var expectedMatch = new BasicMatch(team1, team2);
 
-            var matches = await _graph.GetMatchesAsync(team1.Coach);
+            var matches = _graph.GetMatches(team1.Coach);
             Assert.Single(matches);
             Assert.Contains(expectedMatch, matches);
 
         }
 
         [Fact]
-        public async void MatchRemoved()
+        public void MatchRemoved()
         {
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);
-            _ = _graph.AddAsync(team1);
-            _ = _graph.AddAsync(team2);
+            _graph.Add(team1);
+            _graph.Add(team2);
 
             var match = new BasicMatch(team1, team2);
 
-            await _graph.RemoveAsync(match);
+            _graph.Remove(match);
 
-            var matches = await _graph.GetMatchesAsync();
+            var matches = _graph.GetMatches();
             Assert.Empty(matches);
         }
         [Fact]
-        public async void MatchLaunched()
+        public void MatchLaunched()
         {
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);
@@ -119,65 +119,65 @@ namespace GamefinderTest
             var team5 = _fixture.SimpleTeam(5);
             var team6 = _fixture.SimpleTeam(6);
 
-            _ = _graph.AddAsync(team1);
-            _ = _graph.AddAsync(team2);
-            _ = _graph.AddAsync(team3);
-            _ = _graph.AddAsync(team4);
-            _ = _graph.AddAsync(team5);
-            _ = _graph.AddAsync(team6);
+            _graph.Add(team1);
+            _graph.Add(team2);
+            _graph.Add(team3);
+            _graph.Add(team4);
+            _graph.Add(team5);
+            _graph.Add(team6);
 
-            var match = await _graph.GetMatchAsync(team1, team2);
+            var match = _graph.GetMatch(team1, team2);
 
             Assert.NotNull(match);
 
             if (match == null) return; // Gets rid of IntelliSense warning
             
-            await _graph.TriggerLaunchGameAsync(match);
+            _graph.TriggerLaunchGame(match);
 
             // Check locks
             Assert.True(team1.Coach.Locked);
             Assert.True(team2.Coach.Locked);
             Assert.False(team5.Coach.Locked);
 
-            var dependentMatch = await _graph.GetMatchAsync(team1, team5);
+            var dependentMatch = _graph.GetMatch(team1, team5);
 
             Assert.NotNull(dependentMatch);
             Assert.True(dependentMatch?.MatchState.IsHidden);
 
-            var independentMatch = await _graph.GetMatchAsync(team5, team6);
+            var independentMatch = _graph.GetMatch(team5, team6);
             Assert.NotNull(independentMatch);
             Assert.False(independentMatch?.MatchState.IsHidden);
         }
 
         [Fact]
-        public async void AddCoachesWithTeams()
+        public void AddCoachesWithTeams()
         {
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);
 
-            await _graph.AddAsync(team1);
-            await _graph.AddAsync(team2);
+            _graph.Add(team1);
+            _graph.Add(team2);
 
-            var match = await _graph.GetMatchAsync(team1, team2);
+            var match = _graph.GetMatch(team1, team2);
             Assert.NotNull(match);
 
-            Assert.Single(await _graph.GetMatchesAsync(team1.Coach));
-            Assert.Single(await _graph.GetMatchesAsync(team2.Coach));
+            Assert.Single(_graph.GetMatches(team1.Coach));
+            Assert.Single(_graph.GetMatches(team2.Coach));
         }
 
         [Fact]
-        public async void VerifyMatchStateAfterActivate()
+        public void VerifyMatchStateAfterActivate()
         {
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);
 
-            await _graph.AddAsync(team1);
-            await _graph.AddAsync(team2);
+            _graph.Add(team1);
+            _graph.Add(team2);
 
-            Assert.Single(await _graph.GetMatchesAsync(team1.Coach));
-            Assert.Single(await _graph.GetMatchesAsync(team2.Coach));
+            Assert.Single(_graph.GetMatches(team1.Coach));
+            Assert.Single(_graph.GetMatches(team2.Coach));
 
-            var match = await _graph.GetMatchAsync(team1, team2);
+            var match = _graph.GetMatch(team1, team2);
             Assert.NotNull(match);
 
             if (match == null)
@@ -185,30 +185,30 @@ namespace GamefinderTest
                 return;
             }
 
-            await match.MatchState.ActAsync(match, MatchAction.Accept2);
+            match.MatchState.Act(match, MatchAction.Accept2);
 
-            await _graph.RemoveAsync(team1.Coach);
-            Assert.Empty(await _graph.GetMatchesAsync(team2.Coach));
-            await _graph.AddAsync(team1);
+            _graph.Remove(team1.Coach);
+            Assert.Empty(_graph.GetMatches(team2.Coach));
+            _graph.Add(team1);
 
-            var match1 = (await _graph.GetMatchesAsync(team1.Coach)).Single();
-            var match2 = (await _graph.GetMatchesAsync(team2.Coach)).Single();
+            var match1 = (_graph.GetMatches(team1.Coach)).Single();
+            var match2 = (_graph.GetMatches(team2.Coach)).Single();
 
             Assert.True(match1.MatchState.IsDefault);
             Assert.True(match2.MatchState.IsDefault);
         }
 
         [Fact]
-        public async void MatchesForSingleCoach()
+        public void MatchesForSingleCoach()
         {
             var team1 = _fixture.SimpleTeam(1);
-            await _graph.AddAsync(team1);
-            Assert.Empty(await _graph.GetMatchesAsync(team1.Coach));
+            _graph.Add(team1);
+            Assert.Empty(_graph.GetMatches(team1.Coach));
         }
 
         public void Dispose()
         {
-            _ = _graph.Reset();
+            _graph.Reset();
             GC.SuppressFinalize(this);
         }
 

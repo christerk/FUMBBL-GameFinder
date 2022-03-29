@@ -36,6 +36,11 @@ namespace Fumbbl.Gamefinder.Model
             _activeCoaches?.Clear();
         }
 
+        public bool Contains(BasicMatch match)
+        {
+            return _startDialogs.ContainsKey(match);
+        }
+
         public void Rescan()
         {
             foreach (var d in _startDialogs.Values)
