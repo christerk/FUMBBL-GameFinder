@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using TeamDto = Fumbbl.Gamefinder.DTO.Team;
 using OpponentDto = Fumbbl.Gamefinder.DTO.Opponent;
 using OfferDto = Fumbbl.Gamefinder.DTO.Offer;
+using StateDto = Fumbbl.Gamefinder.DTO.State;
 using Fumbbl.Gamefinder.Model.Cache;
 
 namespace Fumbbl.Gamefinder.Controllers
@@ -62,6 +63,47 @@ namespace Fumbbl.Gamefinder.Controllers
             IEnumerable<Team> teams = await _model.GetActivatedTeamsAsync(coach);
 
             return teams.Select(t => t.ToUi());
+
+        }
+
+        [HttpPost("State")]
+        public async Task<StateDto> StateAsync([FromForm] int coachId)
+        {
+            var state = new StateDto();
+
+            // Fill Teams
+            var data = await _model.GetCoachesAndTeams();
+            var teams = new List<OpponentDto>();
+            foreach (var (coach, coachTeams) in data)
+            {
+                var opponent = coach.ToOpponent();
+                opponent.Teams = coachTeams.Select(team => team.ToUi());
+                teams.Add(opponent);
+            }
+            state.Teams = teams;
+
+            // Fill Matches
+            if (coachId != 0)
+            {
+                var requestingCoach = await _coachCache.GetOrCreateAsync(coachId);
+                if (requestingCoach != null)
+                {
+                    var matches = await _model.GetMatches(requestingCoach);
+
+                    state.Matches = matches
+                        .Select(m =>
+                        {
+                            var (match, info) = m;
+                            var offer = match.ToUiOffer();
+                            offer.ShowDialog = info.ShowDialog;
+                            offer.AwaitingResponse = match.IsAwaitingResponse(requestingCoach);
+                            offer.CoachNamesStarted = match.CoachNamesStarted();
+                            return offer;
+                        });
+                }
+            }
+
+            return state;
         }
 
         [HttpPost("Opponents")]
