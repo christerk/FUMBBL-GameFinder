@@ -174,7 +174,8 @@ namespace Fumbbl.Gamefinder.Convert
                 Team2 = modelBasicMatch.Team2.ToUi(),
                 Id = $"{modelBasicMatch.Team1.Id} {modelBasicMatch.Team2.Id}",
                 Lifetime = ModelMatch.DEFAULT_TIMEOUT * 1000,
-                TimeRemaining = match?.TimeUntilReset ?? 0
+                TimeRemaining = match?.TimeUntilReset ?? 0,
+                Visible = !modelBasicMatch.MatchState.IsHidden
             };
         }
         #endregion

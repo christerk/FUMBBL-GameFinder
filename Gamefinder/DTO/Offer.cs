@@ -10,6 +10,7 @@
         public bool AwaitingResponse { get; set; }
         public bool ShowDialog { get; set; }
         public bool LaunchGame { get; set; }
+        public bool Visible { get; set; } = true;
         public IEnumerable<string> CoachNamesStarted { get; set; } = Enumerable.Empty<string>();
     }
 }
