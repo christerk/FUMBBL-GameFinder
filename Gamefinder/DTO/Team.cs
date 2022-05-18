@@ -11,5 +11,6 @@
         public Roster? Roster { get; set; }
         public Coach? Coach { get; set; }
         public SeasonInfo? SeasonInfo { get; set; }
+        public bool IsInTournament { get; set; }
     }
 }

@@ -10,10 +10,12 @@ using ModelCoach = Fumbbl.Gamefinder.Model.Coach;
 using ModelTeam = Fumbbl.Gamefinder.Model.Team;
 using ModelBasicMatch = Fumbbl.Gamefinder.Model.BasicMatch;
 using ModelMatch = Fumbbl.Gamefinder.Model.Match;
+using ModelTournament= Fumbbl.Gamefinder.Model.Tournament;
 
 using ApiCoach = Fumbbl.Api.DTO.Coach;
 using ApiRaceLogo = Fumbbl.Api.DTO.RaceLogo;
 using ApiTeam = Fumbbl.Api.DTO.Team;
+using ApiTournament = Fumbbl.Api.DTO.Tournament;
 
 namespace Fumbbl.Gamefinder.Convert
 {
@@ -29,6 +31,7 @@ namespace Fumbbl.Gamefinder.Convert
                 Id = apiCoach.Id,
                 Name = apiCoach.Name,
                 Rating = apiCoach.Rating,
+                CanLfg = apiCoach.CanLfg,
             };
         }
 
@@ -92,6 +95,10 @@ namespace Fumbbl.Gamefinder.Convert
                 SeasonGames = apiTeam.Season?.Games ?? 0,
                 LeagueName = apiTeam.League ?? string.Empty,
                 LeagueId = apiTeam.LeagueId ?? 0,
+                Status = apiTeam.Status,
+                Tournament = apiTeam?.Tournament?.ToModel(),
+                Ruleset = apiTeam?.Ruleset ?? 0,
+                AllowCrossLeagueMatches = apiTeam?.Options.CrossLeagueMatches ?? false
             };
         }
 
@@ -107,7 +114,8 @@ namespace Fumbbl.Gamefinder.Convert
                 Coach = modelTeam.Coach.ToUi(),
                 League = new UiLeague { Id = modelTeam.LeagueId, Name = modelTeam.LeagueName },
                 Roster = new UiRoster(modelTeam.Roster, modelTeam.RosterLogo32, modelTeam.RosterLogo64),
-                SeasonInfo = new UiSeasonInfo { CurrentSeason = modelTeam.Season, GamesPlayedInCurrentSeason = modelTeam.SeasonGames }
+                SeasonInfo = new UiSeasonInfo { CurrentSeason = modelTeam.Season, GamesPlayedInCurrentSeason = modelTeam.SeasonGames },
+                IsInTournament = modelTeam.Tournament?.Opponents.Any() != null
             };
         }
 
@@ -180,5 +188,16 @@ namespace Fumbbl.Gamefinder.Convert
             };
         }
         #endregion
-    }
+
+        #region Tournament
+        public static ModelTournament ToModel(this ApiTournament apiTournament)
+        {
+            return new ModelTournament()
+            {
+                Id = apiTournament.Id,
+                Opponents = apiTournament.Opponents.ToList()
+            };
+        }
+        #endregion
+}
 }

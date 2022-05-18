@@ -17,6 +17,13 @@ namespace Fumbbl.Gamefinder.Model
         public int SeasonGames { get; set; }
         public int LeagueId { get; set; }
         public string LeagueName { get; set; } = string.Empty;
+        public string Status { get; set; } = String.Empty;
+        public bool AllowCrossLeagueMatches { get; set; }
+
+        public bool IsActive => string.Equals(Status, "Active");
+
+        public Tournament? Tournament { get; set; }
+        public int Ruleset { get; set; }
 
         public Team(Coach coach)
         {
@@ -25,7 +32,60 @@ namespace Fumbbl.Gamefinder.Model
 
         internal bool IsOpponentAllowed(Team opponent)
         {
-            return !Equals(Coach, opponent.Coach);
+            if (!string.Equals(opponent.Division, this.Division))
+            {
+                return false;
+            }
+
+            if (Equals(Coach, opponent.Coach))
+            {
+                return false;
+            }
+
+            if (!Coach.CanLfg || !opponent.Coach.CanLfg)
+            {
+                return false;
+            }
+
+            if (!IsActive || !opponent.IsActive)
+            {
+                return false;
+            }
+
+            if (TeamValue == 0 || opponent.TeamValue == 0)
+            {
+                return false;
+            }
+
+            if (Tournament?.Id < 0 || opponent.Tournament?.Id < 0)
+            {
+                return false;
+            }
+
+            if (Tournament != null && Tournament.Id > 0 && !Tournament.ValidOpponent(opponent.Id))
+            {
+                return false;
+            }
+
+            if (opponent.Tournament != null && opponent.Tournament.Id > 0 && !opponent.Tournament.ValidOpponent(Id))
+            {
+                return false;
+            }
+
+            if (Ruleset != opponent.Ruleset)
+            {
+                return false;
+            }
+
+            if (LeagueId != opponent.LeagueId)
+            {
+                if (!AllowCrossLeagueMatches || !opponent.AllowCrossLeagueMatches)
+                {
+                    return false;
+                }
+            }
+
+            return true;
         }
 
         public override string ToString()
@@ -61,6 +121,9 @@ namespace Fumbbl.Gamefinder.Model
             SeasonGames = team.SeasonGames;
             LeagueId = team.LeagueId;
             LeagueName = team.LeagueName;
+            Status = team.Status;
+            Tournament = team.Tournament;
+            AllowCrossLeagueMatches = team.AllowCrossLeagueMatches;
         }
     }
 }

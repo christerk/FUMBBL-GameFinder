@@ -29,12 +29,6 @@ namespace Fumbbl.Gamefinder.Controllers
             _teamCache = teamCache;
         }
 
-        [HttpGet("Test")]
-        public async Task<string> TestAsync()
-        {
-            return (await _fumbbl.OAuth.Identity()).ToString();
-        }
-
         [HttpPost("Activate")]
         public async Task ActivateAsync([FromForm] int coachId)
         {
@@ -48,22 +42,6 @@ namespace Fumbbl.Gamefinder.Controllers
             }
 
             _model.ActivateAsync(coach, await _teamCache.GetTeams(coach));
-        }
-
-        [HttpPost("GetActivatedTeams")]
-        public async Task<IEnumerable<TeamDto>> GetActivatedTeamsAsync([FromForm] int coachId)
-        {
-            var coach = await _coachCache.GetOrCreateAsync(coachId);
-
-            if (coach == null)
-            {
-                return Enumerable.Empty<TeamDto>();
-            }
-
-            IEnumerable<Team> teams = await _model.GetActivatedTeamsAsync(coach);
-
-            return teams.Select(t => t.ToUi());
-
         }
 
         [HttpPost("State")]
@@ -104,51 +82,6 @@ namespace Fumbbl.Gamefinder.Controllers
             }
 
             return state;
-        }
-
-        [HttpPost("Opponents")]
-        public async Task<IEnumerable<OpponentDto>> OpponentsAsync([FromForm] int coachId)
-        {
-            var data = await _model.GetCoachesAndTeams();
-
-            var opponents = new List<OpponentDto>();
-            foreach (var (coach, teams) in data)
-            {
-                var opponent = coach.ToOpponent();
-                opponent.Teams = teams.Select(team => team.ToUi());
-                opponents.Add(opponent);
-            }
-
-            return opponents;
-        }
-
-        [HttpPost("Offers")]
-        public async Task<IEnumerable<OfferDto>> GetOffers([FromForm] int coachId)
-        {
-            if (coachId == 0)
-            {
-                return Enumerable.Empty<OfferDto>();
-            }
-            var coach = await _coachCache.GetOrCreateAsync(coachId);
-            if (coach == null)
-            {
-                return Enumerable.Empty<OfferDto>();
-            }
-
-            var matches = await _model.GetMatches(coach);
-
-            return matches
-                .Where(m => m.Key.MatchState.IsOffer)
-                .Select(m =>
-                {
-                    var (match, info) = m;
-                    var offer = match.ToUiOffer();
-                    offer.ShowDialog = info.ShowDialog;
-                    offer.LaunchGame = match.MatchState.TriggerLaunchGame;
-                    offer.AwaitingResponse = match.IsAwaitingResponse(coach);
-                    offer.CoachNamesStarted = match.CoachNamesStarted();
-                    return offer;
-                });
         }
 
         [HttpPost("MakeOffer")]

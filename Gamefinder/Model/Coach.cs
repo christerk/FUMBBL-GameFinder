@@ -12,6 +12,7 @@ namespace Fumbbl.Gamefinder.Model
         public int Key => Id;
 
         public string Rating { get; set; } = String.Empty;
+        public bool CanLfg { get; set; }
 
         public Coach()
         {
