@@ -3,7 +3,7 @@
     public class Match : BasicMatch
     {
         public const int DEFAULT_TIMEOUT = 30;
-        public const int LAUNCHED_TIMEOUT = 3;
+        public const int LAUNCHED_TIMEOUT = 10;
         public const int HIDDEN_TIMEOUT = 120;
 
         private readonly MatchGraph _owningGraph;
