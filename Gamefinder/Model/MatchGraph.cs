@@ -64,9 +64,19 @@ namespace Fumbbl.Gamefinder.Model
             }
         }
 
+        internal void SetGameId(BasicMatch match, int clientId)
+        {
+            match.ClientId = clientId;
+        }
+
         public void Ping(Coach coach)
         {
             _coaches.Ping(coach);
+        }
+
+        internal void SetSchedulingError(BasicMatch match, string errorMessage)
+        {
+            match.SchedulingError = errorMessage;
         }
 
         public void Reset()

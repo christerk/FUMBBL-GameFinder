@@ -9,6 +9,8 @@
         public Team Team1 => _team1;
         public Team Team2 => _team2;
         public MatchState MatchState => _matchState;
+        public int ClientId { get; set; }
+        public string SchedulingError { get; set; }
 
         public bool BlackboxPrioritized { get; set; } = false;
 

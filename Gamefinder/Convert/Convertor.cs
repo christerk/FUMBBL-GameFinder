@@ -184,7 +184,9 @@ namespace Fumbbl.Gamefinder.Convert
                 Lifetime = ModelMatch.DEFAULT_TIMEOUT * 1000,
                 TimeRemaining = match?.TimeUntilReset ?? 0,
                 Visible = !modelBasicMatch.MatchState.IsHidden,
-                LaunchGame = modelBasicMatch.MatchState.TriggerLaunchGame
+                LaunchGame = modelBasicMatch.MatchState.TriggerLaunchGame,
+                ClientId = modelBasicMatch.ClientId,
+                SchedulingError = modelBasicMatch.SchedulingError,
             };
         }
         #endregion

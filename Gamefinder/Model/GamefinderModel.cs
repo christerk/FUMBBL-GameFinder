@@ -1,4 +1,5 @@
-﻿using Fumbbl.Gamefinder.Model.Event;
+﻿using Fumbbl.Api;
+using Fumbbl.Gamefinder.Model.Event;
 
 namespace Fumbbl.Gamefinder.Model
 {
@@ -7,15 +8,17 @@ namespace Fumbbl.Gamefinder.Model
         private readonly MatchGraph _matchGraph;
         private EventQueue _eventQueue;
         private ILogger<GamefinderModel> _logger;
+        private FumbblApi _fumbbl;
 
         public MatchGraph Graph => _matchGraph;
 
-        public GamefinderModel(EventQueue eventQueue, ILoggerFactory loggerFactory)
+        public GamefinderModel(EventQueue eventQueue, ILoggerFactory loggerFactory, FumbblApi fumbblApi)
         {
             _eventQueue = eventQueue;
             _matchGraph = new MatchGraph(loggerFactory, eventQueue);
             _matchGraph.MatchLaunched += MatchLaunched;
             _logger = loggerFactory.CreateLogger<GamefinderModel>();
+            _fumbbl = fumbblApi;
             Start();
         }
 
@@ -29,11 +32,43 @@ namespace Fumbbl.Gamefinder.Model
             _eventQueue?.Stop();
         }
 
-        private void MatchLaunched(object? sender, EventArgs e)
+        private async void MatchLaunched(object? sender, EventArgs args)
         {
-            // Call to FUMBBL API to start the game
+            await _eventQueue.DispatchAsync(async () =>
+            {
+                // Check that the match is allowed
+                if (args is MatchUpdatedArgs e && e?.Match != null)
+                {
+                    var gameState = await _fumbbl.GameState.CheckAsync(e.Match.Team1.Id, e.Match.Team2.Id);
 
-            // Tell MatchGraph which FFB Game ID needs to be redirected to
+                    if (gameState is null)
+                    {
+                        _logger.LogError("GameState check FAILED");
+                        return;
+                    }
+
+                    if (!string.Equals(gameState.Result, "OK"))
+                    {
+                        _logger.LogDebug($"GameState check ERROR: {gameState.Message}");
+                        return;
+                    }
+
+                    _logger.LogDebug("GameState check OK");
+
+                    // Call to FUMBBL API to start the game
+                    gameState = await _fumbbl.GameState.ScheduleAsync(e.Match.Team1.Id, e.Match.Team2.Id);
+                    if (gameState != null && string.Equals(gameState.Result, "OK"))
+                    {
+                        // Tell MatchGraph which FFB Game ID needs to be redirected to
+                        _matchGraph.SetGameId(e.Match, gameState.GameId);
+                    }
+                    else
+                    {
+                        _matchGraph.SetSchedulingError(e.Match, gameState == null ? "Error scheduling match" : gameState.Message);
+                    }
+
+                }
+            });
         }
 
         public async void ActivateAsync(Coach activatingCoach, IEnumerable<Team> activatingTeams)

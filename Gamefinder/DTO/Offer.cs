@@ -12,5 +12,7 @@
         public bool LaunchGame { get; set; }
         public bool Visible { get; set; } = true;
         public IEnumerable<string> CoachNamesStarted { get; set; } = Enumerable.Empty<string>();
+        public int ClientId { get; set; }
+        public string SchedulingError { get; set; } = String.Empty;
     }
 }
