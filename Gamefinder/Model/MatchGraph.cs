@@ -152,6 +152,7 @@ namespace Fumbbl.Gamefinder.Model
         public void Add(Team team)
         {
             Logger.LogDebug($"Adding team {team}");
+            Logger.LogTrace($"TV Limit {team.TvLimit}");
             if (team is null || _teams.Contains(team))
             {
                 return;

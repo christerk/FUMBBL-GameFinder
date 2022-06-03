@@ -11,11 +11,14 @@ using ModelTeam = Fumbbl.Gamefinder.Model.Team;
 using ModelBasicMatch = Fumbbl.Gamefinder.Model.BasicMatch;
 using ModelMatch = Fumbbl.Gamefinder.Model.Match;
 using ModelTournament= Fumbbl.Gamefinder.Model.Tournament;
+using ModelTvLimit = Fumbbl.Gamefinder.Model.TvLimit;
 
 using ApiCoach = Fumbbl.Api.DTO.Coach;
 using ApiRaceLogo = Fumbbl.Api.DTO.RaceLogo;
 using ApiTeam = Fumbbl.Api.DTO.Team;
 using ApiTournament = Fumbbl.Api.DTO.Tournament;
+using ApiTvLimit = Fumbbl.Api.DTO.TvLimit;
+
 
 namespace Fumbbl.Gamefinder.Convert
 {
@@ -98,7 +101,8 @@ namespace Fumbbl.Gamefinder.Convert
                 Status = apiTeam.Status,
                 Tournament = apiTeam?.Tournament?.ToModel(),
                 Ruleset = apiTeam?.Ruleset ?? 0,
-                AllowCrossLeagueMatches = apiTeam?.Options.CrossLeagueMatches ?? false
+                AllowCrossLeagueMatches = apiTeam?.Options.CrossLeagueMatches ?? false,
+                TvLimit = apiTeam?.TvLimit?.ToModel() ?? new()
             };
         }
 
@@ -201,5 +205,16 @@ namespace Fumbbl.Gamefinder.Convert
             };
         }
         #endregion
-}
+
+        #region TvLimit
+        public static ModelTvLimit ToModel(this ApiTvLimit apiTvLimit)
+        {
+            return new ModelTvLimit()
+            {
+                Min = apiTvLimit.Min,
+                Max = apiTvLimit.Max
+            };
+        }
+        #endregion
+    }
 }

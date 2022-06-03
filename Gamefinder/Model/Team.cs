@@ -24,6 +24,7 @@ namespace Fumbbl.Gamefinder.Model
 
         public Tournament? Tournament { get; set; }
         public int Ruleset { get; set; }
+        public TvLimit TvLimit { get; set; } = new();
 
         public Team(Coach coach)
         {
@@ -83,6 +84,11 @@ namespace Fumbbl.Gamefinder.Model
                 {
                     return false;
                 }
+            }
+
+            if (!TvLimit.IsWithinRange(opponent.TeamValue) || !opponent.TvLimit.IsWithinRange(TeamValue))
+            {
+                return false;
             }
 
             return true;
