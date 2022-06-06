@@ -13,7 +13,7 @@ namespace Fumbbl.Gamefinder.Model
         private readonly CoachStore _coaches;
         private readonly MatchStore _matches;
         private readonly DialogManager _dialogManager;
-        public readonly ILogger<MatchGraph> Logger;
+        internal readonly ILogger<MatchGraph> Logger;
 
         public event EventHandler? CoachAdded;
         public event EventHandler? CoachRemoved;
@@ -69,14 +69,15 @@ namespace Fumbbl.Gamefinder.Model
             match.ClientId = clientId;
         }
 
-        public void Ping(Coach coach)
+        public void Ping(Coach coach, int offsetSeconds = 0)
         {
-            _coaches.Ping(coach);
+            _coaches.Ping(coach, offsetSeconds);
         }
 
         internal void SetSchedulingError(BasicMatch match, string errorMessage)
         {
             match.SchedulingError = errorMessage;
+            Logger.LogError($"Error scueduling {match}: {errorMessage}");
         }
 
         public void Reset()
@@ -151,8 +152,7 @@ namespace Fumbbl.Gamefinder.Model
 
         public void Add(Team team)
         {
-            Logger.LogDebug($"Adding team {team}");
-            Logger.LogTrace($"TV Limit {team.TvLimit}");
+            Logger.LogTrace($"Adding team {team} {team.TvLimit} Ruleset({team.RulesetId})");
             if (team is null || _teams.Contains(team))
             {
                 return;

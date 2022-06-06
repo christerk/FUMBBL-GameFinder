@@ -43,17 +43,20 @@ namespace Fumbbl.Gamefinder.Model
 
                     if (gameState is null)
                     {
-                        _logger.LogError("GameState check FAILED");
+                        _matchGraph.SetSchedulingError(e.Match, "Unable to verify game validity");
                         return;
                     }
 
                     if (!string.Equals(gameState.Result, "OK"))
                     {
-                        _logger.LogDebug($"GameState check ERROR: {gameState.Message}");
+                        _matchGraph.SetSchedulingError(e.Match, gameState.Message);
                         return;
                     }
 
-                    _logger.LogDebug("GameState check OK");
+                    _logger.LogInformation($"GameState check OK for {e.Match}");
+
+                    _matchGraph.Ping(e.Match.Team1.Coach, Match.LAUNCHED_TIMEOUT);
+                    _matchGraph.Ping(e.Match.Team2.Coach, Match.LAUNCHED_TIMEOUT);
 
                     // Call to FUMBBL API to start the game
                     gameState = await _fumbbl.GameState.ScheduleAsync(e.Match.Team1.Id, e.Match.Team2.Id);
@@ -64,7 +67,7 @@ namespace Fumbbl.Gamefinder.Model
                     }
                     else
                     {
-                        _matchGraph.SetSchedulingError(e.Match, gameState == null ? "Error scheduling match" : gameState.Message);
+                        _matchGraph.SetSchedulingError(e.Match, gameState?.Message ?? "Error scheduling match");
                     }
 
                 }

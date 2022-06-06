@@ -39,11 +39,17 @@ namespace Fumbbl.Gamefinder.Model.Store
             return true;
         }
 
-        internal void Ping(Coach coach)
+        internal void Ping(Coach coach, int offsetSeconds)
         {
             if (_lastEvents.TryGetValue(coach, out var lastEvent))
             {
-                _lastEvents.TryUpdate(coach, DateTime.Now, lastEvent);
+                DateTime newValue = DateTime.Now;
+
+                if (newValue > lastEvent)
+                {
+                    offsetSeconds = Math.Max(0, offsetSeconds - 4); // Subtract timeout seconds to get expiry time correct
+                    _lastEvents.TryUpdate(coach, DateTime.Now.AddSeconds(offsetSeconds), lastEvent);
+                }
             }
         }
 
