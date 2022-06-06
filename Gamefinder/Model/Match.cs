@@ -2,9 +2,9 @@
 {
     public class Match : BasicMatch
     {
-        public const int DEFAULT_TIMEOUT = 30;
-        public const int LAUNCHED_TIMEOUT = 10;
-        public const int HIDDEN_TIMEOUT = 120;
+        public const int DEFAULT_TIMEOUT = 60;
+        public const int LAUNCHED_TIMEOUT = 30;
+        public const int HIDDEN_TIMEOUT = 300;
 
         private readonly MatchGraph _owningGraph;
         private DateTime _resetTimestamp;
