@@ -89,7 +89,7 @@ namespace Fumbbl.Gamefinder.Convert
             {
                 Id = apiTeam.Id,
                 Name = apiTeam.Name,
-                TeamValue = apiTeam.TeamValue,
+                CurrentTeamValue = apiTeam.CurrentTeamValue,
                 Division = apiTeam.Division,
                 Roster = apiTeam.Race,
                 RosterLogo32 = apiTeam.RaceLogos.FirstOrDefault(l => l.Size == 32)?.Logo ?? UNKNOWN_LOGO_32,
@@ -100,7 +100,7 @@ namespace Fumbbl.Gamefinder.Convert
                 LeagueId = apiTeam.LeagueId ?? 0,
                 Status = apiTeam.Status,
                 Tournament = apiTeam?.Tournament?.ToModel(),
-                Ruleset = apiTeam?.Ruleset ?? 0,
+                RulesetId = apiTeam?.RulesetId ?? 0,
                 AllowCrossLeagueMatches = apiTeam?.Options.CrossLeagueMatches ?? false,
                 TvLimit = apiTeam?.TvLimit?.ToModel() ?? new()
             };
@@ -113,7 +113,7 @@ namespace Fumbbl.Gamefinder.Convert
                 Id = modelTeam.Id,
                 Name = modelTeam.Name,
                 IsLfg = true,
-                TeamValue = modelTeam.TeamValue,
+                TeamValue = modelTeam.CurrentTeamValue,
                 Division = modelTeam.Division,
                 Coach = modelTeam.Coach.ToUi(),
                 League = new UiLeague { Id = modelTeam.LeagueId, Name = modelTeam.LeagueName },

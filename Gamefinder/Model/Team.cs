@@ -9,7 +9,7 @@ namespace Fumbbl.Gamefinder.Model
         public int Id { get; set; }
 
         public string Division { get; set; } = string.Empty;
-        public int TeamValue { get; set; }
+        public int CurrentTeamValue { get; set; }
         public string Roster { get; set; } = string.Empty;
         public int RosterLogo32 { get; set; }
         public int RosterLogo64 { get; set; }
@@ -23,7 +23,7 @@ namespace Fumbbl.Gamefinder.Model
         public bool IsActive => string.Equals(Status, "Active");
 
         public Tournament? Tournament { get; set; }
-        public int Ruleset { get; set; }
+        public int RulesetId { get; set; }
         public TvLimit TvLimit { get; set; } = new();
 
         public Team(Coach coach)
@@ -53,7 +53,7 @@ namespace Fumbbl.Gamefinder.Model
                 return false;
             }
 
-            if (TeamValue == 0 || opponent.TeamValue == 0)
+            if (CurrentTeamValue == 0 || opponent.CurrentTeamValue == 0)
             {
                 return false;
             }
@@ -73,7 +73,7 @@ namespace Fumbbl.Gamefinder.Model
                 return false;
             }
 
-            if (Ruleset != opponent.Ruleset)
+            if (RulesetId != opponent.RulesetId)
             {
                 return false;
             }
@@ -86,7 +86,7 @@ namespace Fumbbl.Gamefinder.Model
                 }
             }
 
-            if (!TvLimit.IsWithinRange(opponent.TeamValue) || !opponent.TvLimit.IsWithinRange(TeamValue))
+            if (!TvLimit.IsWithinRange(opponent.CurrentTeamValue) || !opponent.TvLimit.IsWithinRange(CurrentTeamValue))
             {
                 return false;
             }
@@ -119,7 +119,7 @@ namespace Fumbbl.Gamefinder.Model
             Coach = team.Coach;
             Name = team.Name;
             Division = team.Division;
-            TeamValue = team.TeamValue;
+            CurrentTeamValue = team.CurrentTeamValue;
             Roster = team.Roster;
             RosterLogo32 = team.RosterLogo32;
             RosterLogo64 = team.RosterLogo64;
