@@ -9,7 +9,10 @@ namespace Fumbbl.Gamefinder.Model
         public int Id { get; set; }
 
         public string Division { get; set; } = string.Empty;
+        public int TeamValue { get; set; }
         public int CurrentTeamValue { get; set; }
+        public int TeamValueReduction { get; set; }
+        public int SchedulingTeamValue { get; set; }
         public string Roster { get; set; } = string.Empty;
         public int RosterLogo32 { get; set; }
         public int RosterLogo64 { get; set; }
@@ -53,7 +56,7 @@ namespace Fumbbl.Gamefinder.Model
                 return false;
             }
 
-            if (CurrentTeamValue == 0 || opponent.CurrentTeamValue == 0)
+            if (SchedulingTeamValue == 0 || opponent.SchedulingTeamValue == 0)
             {
                 return false;
             }
@@ -86,7 +89,7 @@ namespace Fumbbl.Gamefinder.Model
                 }
             }
 
-            if (!TvLimit.IsWithinRange(opponent.CurrentTeamValue) || !opponent.TvLimit.IsWithinRange(CurrentTeamValue))
+            if (!TvLimit.IsWithinRange(opponent.SchedulingTeamValue) || !opponent.TvLimit.IsWithinRange(SchedulingTeamValue))
             {
                 return false;
             }
@@ -119,7 +122,9 @@ namespace Fumbbl.Gamefinder.Model
             Coach = team.Coach;
             Name = team.Name;
             Division = team.Division;
+            TeamValue = team.TeamValue;
             CurrentTeamValue = team.CurrentTeamValue;
+            TeamValueReduction = team.TeamValueReduction;
             Roster = team.Roster;
             RosterLogo32 = team.RosterLogo32;
             RosterLogo64 = team.RosterLogo64;

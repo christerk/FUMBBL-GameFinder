@@ -1,4 +1,5 @@
-﻿using Fumbbl.Gamefinder.Model;
+﻿using Fumbbl.Api;
+using Fumbbl.Gamefinder.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -26,7 +27,7 @@ namespace GamefinderTest
                 );
             LoggerFactory = serviceCollection.BuildServiceProvider().GetService<ILoggerFactory>();
             EventQueue queue = new EventQueue(LoggerFactory.CreateLogger<EventQueue>());
-            GamefinderModel = new(queue, LoggerFactory);
+            GamefinderModel = new(queue, LoggerFactory, null);
             GamefinderModel.Start();
             Coaches = new();
             Teams = new();

@@ -29,7 +29,7 @@ namespace GamefinderVisualizer
         {
             var queue = new EventQueue(loggerFactory.CreateLogger<EventQueue>());
             _graph = new(loggerFactory, queue);
-            GamefinderModel gameFinder = new(queue, loggerFactory);
+            GamefinderModel gameFinder = new(queue, loggerFactory, null);
 
             InitializeComponent();
 
