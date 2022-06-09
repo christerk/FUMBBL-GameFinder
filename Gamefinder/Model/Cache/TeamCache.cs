@@ -18,6 +18,10 @@ namespace Fumbbl.Gamefinder.Model.Cache
             List<Team> teams = new();
             if (apiTeams is not null)
             {
+                if (apiTeams.RecentOpponents is not null)
+                {
+                    coach.RecentOpponents = new List<int>(apiTeams.RecentOpponents);
+                }
                 foreach (var apiTeam in apiTeams.Teams.Where(t => string.Equals(t.IsLfg, "Yes") && string.Equals(t.Status, "Active")))
                 {
                     var team = apiTeam.ToModel(coach);

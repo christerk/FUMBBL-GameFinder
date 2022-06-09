@@ -34,7 +34,7 @@ namespace Fumbbl.Gamefinder.Model.Store
         internal bool IsTimedOut(Coach coach)
         {
             if (_lastEvents.TryGetValue(coach, out var lastEvent)) {
-                return (DateTime.Now - lastEvent).TotalSeconds > 4;
+                return (DateTime.Now - lastEvent).TotalSeconds > Coach.COACH_TIMEOUT;
             }
             return true;
         }
@@ -47,7 +47,7 @@ namespace Fumbbl.Gamefinder.Model.Store
 
                 if (newValue > lastEvent)
                 {
-                    offsetSeconds = Math.Max(0, offsetSeconds - 4); // Subtract timeout seconds to get expiry time correct
+                    offsetSeconds = Math.Max(0, offsetSeconds - Coach.COACH_TIMEOUT); // Subtract timeout seconds to get expiry time correct
                     _lastEvents.TryUpdate(coach, DateTime.Now.AddSeconds(offsetSeconds), lastEvent);
                 }
             }

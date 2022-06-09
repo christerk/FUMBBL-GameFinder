@@ -4,9 +4,11 @@ namespace Fumbbl.Gamefinder.Model
 {
     public class Coach : IEquatable<Coach>, IKeyedItem<int>
     {
+        public const int COACH_TIMEOUT = 10;
         public string Name { get; set; } = String.Empty;
         public int Id { get; set; }
 
+        public IEnumerable<int> RecentOpponents { get; set; } = Enumerable.Empty<int>();
         public bool Locked { get; private set; } = false;
 
         public int Key => Id;

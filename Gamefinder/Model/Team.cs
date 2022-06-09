@@ -28,6 +28,8 @@ namespace Fumbbl.Gamefinder.Model
         public Tournament? Tournament { get; set; }
         public int RulesetId { get; set; }
         public TvLimit TvLimit { get; set; } = new();
+        public int? LastOpponent { get; set; }
+        public bool Competitive { get; set; }
 
         public Team(Coach coach)
         {
@@ -46,9 +48,27 @@ namespace Fumbbl.Gamefinder.Model
                 return false;
             }
 
-            if (!Coach.CanLfg || !opponent.Coach.CanLfg)
+            if (Competitive)
             {
-                return false;
+                if (!Coach.CanLfg || !opponent.Coach.CanLfg)
+                {
+                    return false;
+                }
+
+                if (LastOpponent == opponent.Coach.Id || opponent.LastOpponent == Coach.Id)
+                {
+                    return false;
+                }
+
+                if (Coach.RecentOpponents.Contains(opponent.Coach.Id) || opponent.Coach.RecentOpponents.Contains(Coach.Id))
+                {
+                    return false;
+                }
+
+                if (!TvLimit.IsWithinRange(opponent.SchedulingTeamValue) || !opponent.TvLimit.IsWithinRange(SchedulingTeamValue))
+                {
+                    return false;
+                }
             }
 
             if (!IsActive || !opponent.IsActive)
@@ -87,11 +107,6 @@ namespace Fumbbl.Gamefinder.Model
                 {
                     return false;
                 }
-            }
-
-            if (!TvLimit.IsWithinRange(opponent.SchedulingTeamValue) || !opponent.TvLimit.IsWithinRange(SchedulingTeamValue))
-            {
-                return false;
             }
 
             return true;
