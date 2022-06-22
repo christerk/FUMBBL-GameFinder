@@ -44,6 +44,18 @@ namespace Fumbbl.Gamefinder.Controllers
             _model.ActivateAsync(coach, await _teamCache.GetTeams(coach));
         }
 
+        [HttpPost("DebugData")]
+        public object DebugDataAsync()
+        {
+            return new
+            {
+                Coaches = _model.Graph.GetCoaches(),
+                Teams = _model.Graph.GetTeams(),
+                Matches = _model.Graph.GetMatches(),
+                StartDialogs = _model.Graph.DialogManager
+            };
+        }
+
         [HttpPost("State")]
         public async Task<StateDto> StateAsync([FromForm] int coachId)
         {
@@ -112,6 +124,15 @@ namespace Fumbbl.Gamefinder.Controllers
             {
                 await _model.StartGame(coach, myTeamId, opponentTeamId);
             }
+        }
+
+        [HttpPost("Blackbox")]
+        public IEnumerable<BasicMatch>? GetBlackbox()
+        {
+            BlackboxModel blackbox = new BlackboxModel(_model.Graph);
+            var matches = blackbox.GenerateRound();
+
+            return matches;
         }
 
     }

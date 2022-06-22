@@ -32,6 +32,11 @@ namespace Fumbbl.Gamefinder.Model
             _eventQueue?.Stop();
         }
 
+        public void DisableEventHandling()
+        {
+            _matchGraph.MatchLaunched -= MatchLaunched;
+        }
+
         private async void MatchLaunched(object? sender, EventArgs args)
         {
             await _eventQueue.DispatchAsync(async () =>

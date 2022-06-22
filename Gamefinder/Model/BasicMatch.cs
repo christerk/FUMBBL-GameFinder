@@ -12,8 +12,6 @@
         public int ClientId { get; set; }
         public string? SchedulingError { get; set; }
 
-        public bool BlackboxPrioritized { get; set; } = false;
-
         public BasicMatch(Team team1, Team team2)
         {
             // Ensure team1 is always the team with the lowest ID to allow mirror matches to be .Equals() == true
@@ -28,6 +26,19 @@
         public bool Includes(Team team)
         {
             return _team1.Equals(team) || _team2.Equals(team);
+        }
+
+        internal Coach? GetOpponent(Coach coach)
+        {
+            if (_team1.Coach.Equals(coach))
+            {
+                return _team2.Coach;
+            }
+            if (_team2.Coach.Equals(coach))
+            {
+                return _team1.Coach;
+            }
+            return default;
         }
 
         public Team? GetOpponent(Team team)

@@ -179,7 +179,7 @@ namespace Fumbbl.Gamefinder.Model
 
         public void Remove(Team team)
         {
-            Logger.LogDebug($"Removing team {team}");
+            Logger.LogTrace($"Removing team {team}");
             if (team is null || !_teams.Contains(team))
             {
                 return;
@@ -210,7 +210,7 @@ namespace Fumbbl.Gamefinder.Model
 
         public void Remove(BasicMatch match)
         {
-            Logger.LogDebug($"Removing Match {match}");
+            Logger.LogTrace($"Removing Match {match}");
             if (match is null || !_matches.Contains(match))
             {
                 return;

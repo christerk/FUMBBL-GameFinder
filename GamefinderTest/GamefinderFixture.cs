@@ -28,7 +28,7 @@ namespace GamefinderTest
             LoggerFactory = serviceCollection.BuildServiceProvider().GetService<ILoggerFactory>();
             EventQueue queue = new EventQueue(LoggerFactory.CreateLogger<EventQueue>());
             GamefinderModel = new(queue, LoggerFactory, null);
-            GamefinderModel.Start();
+            GamefinderModel.DisableEventHandling();
             Coaches = new();
             Teams = new();
 
@@ -56,7 +56,7 @@ namespace GamefinderTest
             {
                 coach = CreateCoach(teamId);
             }
-            var team = new Team(coach) { Id = teamId, Name = $"Team {teamId}" };
+            var team = new Team(coach) { Id = teamId, Name = $"Team {teamId}", SchedulingTeamValue = 1000000, Status="Active" };
 
             return team;
         }
