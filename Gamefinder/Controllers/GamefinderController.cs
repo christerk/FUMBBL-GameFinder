@@ -51,13 +51,13 @@ namespace Fumbbl.Gamefinder.Controllers
         }
 
         [HttpPost("State")]
-        public async Task<StateDto> StateAsync([FromForm] int coachId, [FromForm] long version)
+        public async Task<ActionResult<StateDto>> StateAsync([FromForm] int coachId, [FromForm] long version)
         {
             var state = new StateDto();
 
             if (version != state.Version)
             {
-                throw new Exception("Invalid request version. Please reload the page.");
+                return BadRequest(new { message = "Invalid request version. Please reload the page." });
             }
 
             // Fill Teams
@@ -92,7 +92,7 @@ namespace Fumbbl.Gamefinder.Controllers
                 }
             }
 
-            return state;
+            return Ok(state);
         }
 
         [HttpPost("MakeOffer")]
@@ -125,14 +125,14 @@ namespace Fumbbl.Gamefinder.Controllers
             }
         }
 
-        [HttpPost("Blackbox")]
-        public IEnumerable<BasicMatch>? GetBlackbox()
-        {
-            BlackboxModel blackbox = new BlackboxModel(_model.Graph);
-            var matches = blackbox.GenerateRound();
+        //[HttpPost("Blackbox")]
+        //public IEnumerable<BasicMatch>? GetBlackbox()
+        //{
+        //    BlackboxModel blackbox = new BlackboxModel(_model.Graph);
+        //    var matches = blackbox.GenerateRound();
 
-            return matches;
-        }
+        //    return matches;
+        //}
 
     }
 }
