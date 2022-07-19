@@ -30,18 +30,18 @@ namespace Fumbbl.Gamefinder.Controllers
         }
 
         [HttpPost("Activate")]
-        public async Task ActivateAsync([FromForm] int coachId)
+        public async Task<StateDto> ActivateAsync([FromForm] int coachId)
         {
             _coachCache.Flush(coachId);
 
             var coach = await _coachCache.GetOrCreateAsync(coachId);
 
-            if (coach == null)
+            if (coach != null)
             {
-                return;
+                _model.ActivateAsync(coach, await _teamCache.GetTeams(coach));
             }
 
-            _model.ActivateAsync(coach, await _teamCache.GetTeams(coach));
+            return new();
         }
 
         [HttpPost("DebugData")]
