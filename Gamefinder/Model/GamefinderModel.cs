@@ -79,6 +79,19 @@ namespace Fumbbl.Gamefinder.Model
             });
         }
 
+        public async Task<object> GetDebugData()
+        {
+            return await _eventQueue.Serialized<object>((result) =>
+            {
+                result.SetResult(new
+                {
+                    Coaches = Graph.GetCoaches(),
+                    Teams = Graph.GetTeams(),
+                    Matches = Graph.GetMatches(),
+                    StartDialogs = Graph.DialogManager.GetDialogs()
+                });
+            });
+        }
         public async void ActivateAsync(Coach activatingCoach, IEnumerable<Team> activatingTeams)
         {
             await _eventQueue.DispatchAsync(() =>

@@ -45,21 +45,20 @@ namespace Fumbbl.Gamefinder.Controllers
         }
 
         [HttpPost("DebugData")]
-        public object DebugDataAsync()
+        public async Task<object> DebugDataAsync()
         {
-            return new
-            {
-                Coaches = _model.Graph.GetCoaches(),
-                Teams = _model.Graph.GetTeams(),
-                Matches = _model.Graph.GetMatches(),
-                StartDialogs = _model.Graph.DialogManager
-            };
+            return await _model.GetDebugData();
         }
 
         [HttpPost("State")]
-        public async Task<StateDto> StateAsync([FromForm] int coachId)
+        public async Task<StateDto> StateAsync([FromForm] int coachId, [FromForm] long version)
         {
             var state = new StateDto();
+
+            if (version != state.Version)
+            {
+                throw new Exception("Invalid request version. Please reload the page.");
+            }
 
             // Fill Teams
             var data = await _model.GetCoachesAndTeams();

@@ -47,9 +47,14 @@ namespace Fumbbl.Gamefinder.Model.Store
 
                 if (newValue > lastEvent)
                 {
-                    offsetSeconds = Math.Max(0, offsetSeconds - Coach.COACH_TIMEOUT); // Subtract timeout seconds to get expiry time correct
-                    _lastEvents.TryUpdate(coach, DateTime.Now.AddSeconds(offsetSeconds), lastEvent);
+                    newValue = newValue.AddSeconds(Math.Max(0, offsetSeconds - Coach.COACH_TIMEOUT)); // Subtract timeout seconds to get expiry time correct
+                    _lastEvents.TryUpdate(coach, newValue, lastEvent);
+                    _logger.LogTrace($"Set lastEvent for {coach} to {newValue}.");
                 }
+            }
+            else
+            {
+                _logger.LogTrace($"Unable to set lastEvent for {coach}.");
             }
         }
 

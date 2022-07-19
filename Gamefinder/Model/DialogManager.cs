@@ -30,6 +30,11 @@ namespace Fumbbl.Gamefinder.Model
             Rescan();
         }
 
+        public List<StartDialog> GetDialogs()
+        {
+            return _startDialogs.Values.ToList();
+        }
+
         public void Clear()
         {
             _startDialogs?.Clear();

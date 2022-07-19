@@ -1,6 +1,6 @@
 ﻿namespace Fumbbl.Gamefinder.Model
 {
-    internal class StartDialog
+    public class StartDialog
     {
         public BasicMatch Match { get; set; }
         public Coach Coach1 { get; set; }
