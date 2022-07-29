@@ -14,6 +14,7 @@ builder.Services.AddFumbbl();
 builder.Services.AddSingleton<EventQueue>();
 builder.Services.AddSingleton<MatchGraph>();
 builder.Services.AddSingleton<GamefinderModel>();
+builder.Services.AddSingleton<BlackboxModel>();
 builder.Services.AddSingleton<CoachCache>();
 builder.Services.AddSingleton<TeamCache>();
 

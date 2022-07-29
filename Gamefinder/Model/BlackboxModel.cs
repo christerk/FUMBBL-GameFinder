@@ -2,15 +2,31 @@
 {
     public class BlackboxModel
     {
+        public const int ACTIVE_DURATION = 5;
+        public const int PAUSE_DURATION = 10;
         private readonly MatchGraph _matchGraph;
         private List<BasicMatch> _matches;
 
         public MatchGraph Graph => _matchGraph;
 
+        private DateTime _previousDraw = DateTime.MinValue;
+        private DateTime _nextDraw = DateTime.MaxValue;
+
+        public DTO.BlackboxStatus Status => (_nextDraw - DateTime.Now).TotalSeconds < ACTIVE_DURATION * 60 ? DTO.BlackboxStatus.Active : DTO.BlackboxStatus.Paused;
+        public int SecondsRemaining => (int) Math.Floor((_nextDraw - DateTime.Now).TotalSeconds);
+        public int CoachCount => 42;
+
+        public DateTime PreviousDraw => _previousDraw;
+        public DateTime NextDraw => _nextDraw;
+
         public BlackboxModel(MatchGraph matchGraph)
         {
             _matchGraph = matchGraph;
             _matches = new List<BasicMatch>();
+            var now = DateTime.Now;
+            var resolution = ACTIVE_DURATION + PAUSE_DURATION;
+            _previousDraw = new DateTime(now.Year, now.Month, now.Day, now.Hour, (now.Minute / resolution) * resolution, 0);
+            _nextDraw = _previousDraw.AddMinutes(resolution);
         }
 
         public IEnumerable<BasicMatch>? GenerateRound()
@@ -98,6 +114,11 @@
         private int getSuitability(Team team1, Team team2)
         {
             return 100;
+        }
+
+        internal bool IsUserActivated(int coachId)
+        {
+            return true;
         }
     }
 }

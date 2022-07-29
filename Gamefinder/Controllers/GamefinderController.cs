@@ -7,6 +7,7 @@ using OpponentDto = Fumbbl.Gamefinder.DTO.Opponent;
 using OfferDto = Fumbbl.Gamefinder.DTO.Offer;
 using StateDto = Fumbbl.Gamefinder.DTO.State;
 using BlackboxConfigDto = Fumbbl.Gamefinder.DTO.BlackboxConfig;
+using BlackboxStateDto = Fumbbl.Gamefinder.DTO.BlackboxState;
 using Fumbbl.Gamefinder.Model.Cache;
 
 namespace Fumbbl.Gamefinder.Controllers
@@ -20,14 +21,16 @@ namespace Fumbbl.Gamefinder.Controllers
         private readonly GamefinderModel _model;
         private readonly CoachCache _coachCache;
         private readonly TeamCache _teamCache;
+        private readonly BlackboxModel _blackbox;
 
-        public GamefinderController(FumbblApi fumbbl, ILogger<GamefinderController> logger, GamefinderModel model, CoachCache coachCache, TeamCache teamCache)
+        public GamefinderController(FumbblApi fumbbl, ILogger<GamefinderController> logger, GamefinderModel model, BlackboxModel blackbox, CoachCache coachCache, TeamCache teamCache)
         {
             _fumbbl = fumbbl;
             _logger = logger;
             _model = model;
             _coachCache = coachCache;
             _teamCache = teamCache;
+            _blackbox = blackbox;
         }
 
         [HttpPost("Activate")]
@@ -93,6 +96,13 @@ namespace Fumbbl.Gamefinder.Controllers
                 }
             }
 
+            state.Blackbox.UserActivated = _blackbox.IsUserActivated(coachId);
+            state.Blackbox.Status = Enum.GetName(typeof(DTO.BlackboxStatus), _blackbox.Status) ?? "Offline";
+            state.Blackbox.SecondsRemaining = _blackbox.SecondsRemaining;
+            state.Blackbox.CoachCount = _blackbox.CoachCount;
+            state.Blackbox.PreviousDraw = _blackbox.PreviousDraw;
+            state.Blackbox.NextDraw = _blackbox.NextDraw;
+
             return Ok(state);
         }
 
@@ -142,5 +152,5 @@ namespace Fumbbl.Gamefinder.Controllers
         //    return matches;
         //}
 
-        }
     }
+}
