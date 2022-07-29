@@ -118,7 +118,7 @@ namespace Fumbbl.Gamefinder.Convert
                 Id = modelTeam.Id,
                 Name = modelTeam.Name,
                 IsLfg = true,
-                TeamValue = modelTeam.SchedulingTeamValue,
+                TeamValue = modelTeam.CurrentTeamValue,
                 Division = modelTeam.Division,
                 Coach = modelTeam.Coach.ToUi(),
                 League = new UiLeague { Id = modelTeam.LeagueId, Name = modelTeam.LeagueName },
