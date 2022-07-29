@@ -6,6 +6,7 @@ using TeamDto = Fumbbl.Gamefinder.DTO.Team;
 using OpponentDto = Fumbbl.Gamefinder.DTO.Opponent;
 using OfferDto = Fumbbl.Gamefinder.DTO.Offer;
 using StateDto = Fumbbl.Gamefinder.DTO.State;
+using BlackboxConfigDto = Fumbbl.Gamefinder.DTO.BlackboxConfig;
 using Fumbbl.Gamefinder.Model.Cache;
 
 namespace Fumbbl.Gamefinder.Controllers
@@ -125,6 +126,13 @@ namespace Fumbbl.Gamefinder.Controllers
             }
         }
 
+        [HttpPost("BlackboxConfig")]
+        public async Task<ActionResult<BlackboxConfigDto>> BlackboxConfigAsync([FromForm] int coachId)
+        {
+            var config = new BlackboxConfigDto();
+            return Ok(await Task.FromResult(config));
+        }
+
         //[HttpPost("Blackbox")]
         //public IEnumerable<BasicMatch>? GetBlackbox()
         //{
@@ -134,5 +142,5 @@ namespace Fumbbl.Gamefinder.Controllers
         //    return matches;
         //}
 
+        }
     }
-}
