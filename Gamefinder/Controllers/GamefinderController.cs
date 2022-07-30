@@ -42,7 +42,7 @@ namespace Fumbbl.Gamefinder.Controllers
 
             if (coach != null)
             {
-                _model.ActivateAsync(coach, await _teamCache.GetTeams(coach));
+                _model.ActivateAsync(coach, await _teamCache.GetLfgTeams(coach));
             }
 
             return new();
@@ -102,6 +102,7 @@ namespace Fumbbl.Gamefinder.Controllers
             state.Blackbox.CoachCount = _blackbox.CoachCount;
             state.Blackbox.PreviousDraw = _blackbox.PreviousDraw;
             state.Blackbox.NextDraw = _blackbox.NextDraw;
+            state.Blackbox.NextActivation = _blackbox.NextActivation;
 
             return Ok(state);
         }

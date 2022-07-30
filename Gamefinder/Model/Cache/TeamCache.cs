@@ -15,6 +15,18 @@ namespace Fumbbl.Gamefinder.Model.Cache
         {
             var apiTeams = await _fumbbl.Coach.TeamsAsync(coach.Id);
 
+            return GetTeams(coach, apiTeams);
+        }
+
+        public async Task<IEnumerable<Team>> GetLfgTeams(Coach coach)
+        {
+            var apiTeams = await _fumbbl.Coach.LfgTeamsAsync(coach.Id);
+
+            return GetTeams(coach, apiTeams);
+        }
+
+        private static IEnumerable<Team> GetTeams(Coach coach, Api.DTO.CoachTeams? apiTeams)
+        {
             List<Team> teams = new();
             if (apiTeams is not null)
             {

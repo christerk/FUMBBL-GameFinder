@@ -13,7 +13,7 @@ namespace GamefinderTest
     public class GamefinderFixture : IDisposable
     {
         public readonly GamefinderModel GamefinderModel;
-        public readonly MatchGraph MatchGraph;
+        public readonly BlackboxModel BlackboxModel;
         public readonly List<Coach> Coaches;
         public readonly List<Team> Teams;
         public ILoggerFactory? LoggerFactory { get; }
@@ -29,9 +29,11 @@ namespace GamefinderTest
             EventQueue queue = new EventQueue(LoggerFactory.CreateLogger<EventQueue>());
             GamefinderModel = new(queue, LoggerFactory, null);
             GamefinderModel.DisableEventHandling();
+
+            BlackboxModel = new(LoggerFactory);
+
             Coaches = new();
             Teams = new();
-
 
             int teamId = 0;
             for (var i=0; i<20; i++)
@@ -50,13 +52,13 @@ namespace GamefinderTest
             return new Coach() { Id = id, Name = $"Coach {id}" };
         }
 
-        public Team SimpleTeam(int teamId, Coach? coach = null)
+        public Team SimpleTeam(int teamId, Coach? coach = null, int teamValue = 1000000)
         {
             if (coach is null)
             {
                 coach = CreateCoach(teamId);
             }
-            var team = new Team(coach) { Id = teamId, Name = $"Team {teamId}", SchedulingTeamValue = 1000000, Status="Active" };
+            var team = new Team(coach) { Id = teamId, Name = $"Team {teamId}", SchedulingTeamValue = teamValue, Status="Active" };
 
             return team;
         }
