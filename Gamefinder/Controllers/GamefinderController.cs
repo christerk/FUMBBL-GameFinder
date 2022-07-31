@@ -96,10 +96,10 @@ namespace Fumbbl.Gamefinder.Controllers
                 }
             }
 
-            state.Blackbox.UserActivated = _blackbox.IsUserActivated(coachId);
+            state.Blackbox.UserActivated = _blackbox.BlackboxStatus.Coaches.Contains(coachId);
             state.Blackbox.Status = Enum.GetName(typeof(DTO.BlackboxStatus), _blackbox.Status) ?? "Offline";
             state.Blackbox.SecondsRemaining = _blackbox.SecondsRemaining;
-            state.Blackbox.CoachCount = _blackbox.CoachCount;
+            state.Blackbox.CoachCount = _blackbox.BlackboxStatus.Coaches.Count();
             state.Blackbox.PreviousDraw = _blackbox.PreviousDraw;
             state.Blackbox.NextDraw = _blackbox.NextDraw;
             state.Blackbox.NextActivation = _blackbox.NextActivation;

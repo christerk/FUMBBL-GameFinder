@@ -30,7 +30,7 @@ namespace GamefinderTest
             GamefinderModel = new(queue, LoggerFactory, null);
             GamefinderModel.DisableEventHandling();
 
-            BlackboxModel = new(LoggerFactory);
+            BlackboxModel = new(LoggerFactory, null);
 
             Coaches = new();
             Teams = new();

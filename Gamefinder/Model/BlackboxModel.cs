@@ -1,4 +1,6 @@
-﻿using Fumbbl.Gamefinder.Model.Cache;
+﻿using Fumbbl.Api;
+using Fumbbl.Api.DTO;
+using Fumbbl.Gamefinder.Model.Cache;
 using System.Diagnostics;
 
 namespace Fumbbl.Gamefinder.Model
@@ -9,6 +11,7 @@ namespace Fumbbl.Gamefinder.Model
         public const int PAUSE_DURATION = 10;
 
         private ILogger<BlackboxModel> _logger;
+        private FumbblApi _fumbbl;
         private EventQueue _eventQueue;
         private readonly MatchGraph _matchGraph;
         private List<BasicMatch> _matches;
@@ -20,18 +23,20 @@ namespace Fumbbl.Gamefinder.Model
         private DateTime _nextDraw = DateTime.MaxValue;
         private DateTime _nextActivation = DateTime.MaxValue;
         private DateTime _currentTime = DateTime.Now;
+        private Api.DTO.BlackboxStatus? _status;
 
         public DTO.BlackboxStatus Status => (_nextDraw - _currentTime).TotalSeconds < ACTIVE_DURATION * 60 ? DTO.BlackboxStatus.Active : DTO.BlackboxStatus.Paused;
         public int SecondsRemaining => (int) Math.Floor(((_nextDraw > _nextActivation ? _nextActivation : _nextDraw) - _currentTime).TotalSeconds);
-        public int CoachCount => 42;
+        public BlackboxStatus BlackboxStatus => _status ?? new();
 
         public DateTime PreviousDraw => _previousDraw;
         public DateTime NextDraw => _nextDraw;
         public DateTime NextActivation => _nextActivation;
 
-        public BlackboxModel(ILoggerFactory loggerFactory)
+        public BlackboxModel(ILoggerFactory loggerFactory, FumbblApi fumbblApi)
         {
             _logger = loggerFactory.CreateLogger<BlackboxModel>();
+            _fumbbl = fumbblApi;
             _eventQueue = new EventQueue(loggerFactory.CreateLogger<EventQueue>());
             _eventQueue.Tick += HandleTick;
             _matchGraph = new(loggerFactory, _eventQueue);
@@ -55,6 +60,10 @@ namespace Fumbbl.Gamefinder.Model
                 GenerateRound();
                 RefreshTimes();
             }
+            _ = _eventQueue.DispatchAsync(async () =>
+            {
+                _status = await _fumbbl.Blackbox.StatusAsync();
+            });
         }
 
         private void RefreshTimes()
