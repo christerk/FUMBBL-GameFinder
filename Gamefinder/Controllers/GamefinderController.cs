@@ -70,7 +70,7 @@ namespace Fumbbl.Gamefinder.Controllers
             foreach (var (coach, coachTeams) in data)
             {
                 var opponent = coach.ToOpponent();
-                opponent.Teams = coachTeams.Select(team => team.ToUi());
+                opponent.Teams = coachTeams.Select(team => team.ToUi(coachId == team.Coach.Id));
                 teams.Add(opponent);
             }
             state.Teams = teams;
@@ -96,7 +96,7 @@ namespace Fumbbl.Gamefinder.Controllers
                 }
             }
 
-            state.Blackbox.UserActivated = _blackbox.BlackboxStatus.Coaches.Contains(coachId);
+            state.Blackbox.UserActivated = _blackbox.Status == DTO.BlackboxStatus.Active && _blackbox.BlackboxStatus.Coaches.Contains(coachId);
             state.Blackbox.Status = Enum.GetName(typeof(DTO.BlackboxStatus), _blackbox.Status) ?? "Offline";
             state.Blackbox.SecondsRemaining = _blackbox.SecondsRemaining;
             state.Blackbox.CoachCount = _blackbox.BlackboxStatus.Coaches.Count();

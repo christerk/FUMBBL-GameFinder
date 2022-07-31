@@ -22,6 +22,7 @@ namespace Fumbbl.Gamefinder.Model
         public string LeagueName { get; set; } = string.Empty;
         public string Status { get; set; } = String.Empty;
         public bool AllowCrossLeagueMatches { get; set; }
+        public LfgMode LfgMode { get; set; } = LfgMode.Mixed;
 
         public bool IsActive => string.Equals(Status, "Active");
 
@@ -150,6 +151,7 @@ namespace Fumbbl.Gamefinder.Model
             Status = team.Status;
             Tournament = team.Tournament;
             AllowCrossLeagueMatches = team.AllowCrossLeagueMatches;
+            LfgMode = team.LfgMode;
         }
     }
 }

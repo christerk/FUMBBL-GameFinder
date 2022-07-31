@@ -12,6 +12,8 @@
         public int ClientId { get; set; }
         public string? SchedulingError { get; set; }
 
+        public int? Suitability { get; set; } = null;
+
         public BasicMatch(Team team1, Team team2)
         {
             // Ensure team1 is always the team with the lowest ID to allow mirror matches to be .Equals() == true

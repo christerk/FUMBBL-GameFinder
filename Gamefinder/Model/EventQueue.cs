@@ -5,13 +5,13 @@ namespace Fumbbl.Gamefinder.Model
     public class EventQueue
     {
         private BlockingCollection<Action> _eventQueue;
-        private ILogger _logger;
+        private ILogger? _logger;
         public EventHandler? Tick;
         private bool _started;
 
         public int TickTimeout { get; set; } = 1000;
 
-        public EventQueue(ILogger<EventQueue> logger)
+        public EventQueue(ILogger<EventQueue>? logger)
         {
             _eventQueue = new();
             _logger = logger;
@@ -43,7 +43,7 @@ namespace Fumbbl.Gamefinder.Model
                             }
                             catch (Exception e)
                             {
-                                _logger.LogError(e.Message, e);
+                                _logger?.LogError(e.Message, e);
                             }
                         }
                     }));

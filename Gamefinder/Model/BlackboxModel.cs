@@ -57,7 +57,7 @@ namespace Fumbbl.Gamefinder.Model
             }
             if (_currentTime >= _nextDraw)
             {
-                GenerateRound();
+                _ = GenerateRound();
                 RefreshTimes();
             }
             _ = _eventQueue.DispatchAsync(async () =>
@@ -89,23 +89,78 @@ namespace Fumbbl.Gamefinder.Model
             });
         }
 
-
         public async Task<List<BasicMatch>> GenerateRound()
         {
-            return await _eventQueue.Serialized<List<BasicMatch>>((result) =>
+            return await _eventQueue.Serialized<List<BasicMatch>>(async (result) =>
             {
-                Stopwatch timer = Stopwatch.StartNew();
-                _logger.LogInformation("Generating Round");
-                var possibleMatches = GetPossibleMatches().ToList();
-
-                var bestMatches = GenerateBestMatches(possibleMatches);
-                bestMatches = bestMatches is null ? new List<BasicMatch>() : bestMatches.ToList();
-
-                timer.Stop();
-                _logger.LogInformation($"Generated round in {timer.ElapsedMilliseconds}ms");
-
-                result.SetResult(bestMatches);
+                var roundInfo = new BlackboxSchedulerResult();
+                await PopulateMatchGraph(roundInfo);
+                var matches = ScheduleMatches(roundInfo);
+                await _fumbbl.Blackbox.ReportRoundAsync(roundInfo);
+                result.SetResult(matches);
             });
+        }
+
+        private async Task PopulateMatchGraph(BlackboxSchedulerResult roundInfo)
+        {
+            _matchGraph.Reset();
+            var status = await _fumbbl.Blackbox.StatusAsync();
+
+            if (status is not null)
+            {
+                var coachCache = new CoachCache(_fumbbl);
+                var teamCache = new TeamCache(_fumbbl);
+                foreach (var coachId in status.Coaches)
+                {
+                    var coach = await coachCache.GetOrCreateAsync(coachId);
+
+                    if (coach is not null)
+                    {
+                        _matchGraph.Add(coach);
+                        var teams = await teamCache.GetLfgTeams(coach);
+                        foreach (var team in teams.Where(t => ActivatedForBlackbox(t)))
+                        {
+                            _matchGraph.Add(team);
+                            roundInfo.AddActivatedTeam(coach.Id, new BlackboxTeam(team.Id, team.SchedulingTeamValue));
+                        }
+                    }
+                }
+            }
+        }
+
+        public List<BasicMatch> ScheduleMatches(BlackboxSchedulerResult roundInfo)
+        {
+            _logger.LogInformation("Generating Round");
+
+            Stopwatch timer = Stopwatch.StartNew();
+            var possibleMatches = GetPossibleMatches().ToList();
+            var bestMatches = GenerateBestMatches(possibleMatches);
+            bestMatches = bestMatches is null ? new List<BasicMatch>() : bestMatches.ToList();
+            timer.Stop();
+
+            _logger.LogInformation($"Generated round in {timer.ElapsedMilliseconds}ms");
+
+            roundInfo.PossibleMatches.AddRange(possibleMatches.Select(m => new BlackboxMatch() {
+                Team1 = new(m.Team1.Id, m.Team1.SchedulingTeamValue),
+                Team2 = new(m.Team2.Id, m.Team2.SchedulingTeamValue),
+                Suitability = m.Suitability ?? 0
+            }));
+
+            roundInfo.ScheduledMatches.AddRange(bestMatches.Select(m => new BlackboxMatch()
+            {
+                Team1 = new(m.Team1.Id, m.Team1.SchedulingTeamValue),
+                Team2 = new(m.Team2.Id, m.Team2.SchedulingTeamValue),
+                Suitability = m.Suitability ?? 0
+            }));
+
+            return bestMatches;
+        }
+
+        private bool ActivatedForBlackbox(Team t)
+        {
+            return string.Equals(t.Division, "Competitive")
+                && (t.LfgMode == LfgMode.Mixed || t.LfgMode == LfgMode.Strict)
+                && t.Tournament?.Opponents.Any() != null;
         }
 
         private List<BasicMatch>? GenerateBestMatches(List<BasicMatch> possibleMatches)
@@ -147,16 +202,20 @@ namespace Fumbbl.Gamefinder.Model
         private IEnumerable<BasicMatch> GetPossibleMatches()
         {
             HashSet<(Coach, Coach)> processed = new();
-            foreach (var coach in _matchGraph.GetCoaches().Where(c => ActivatedForBlackbox(c)))
+            foreach (var coach in _matchGraph.GetCoaches())
             {
-                var coachMatches = _matchGraph.GetMatches(coach).Where(m => AllowedForBlackbox(m));
+                var coachMatches = _matchGraph.GetMatches(coach);
+                foreach (var match in coachMatches)
+                {
+                    match.Suitability = CalculateSuitability(match);
+                }
 
                 var opponents = coachMatches.GroupBy(m => m.GetOpponent(coach));
                 foreach (var opponent in opponents)
                 {
                     if (opponent.Key is not null && !processed.Contains((opponent.Key, coach)) && !processed.Contains((coach, opponent.Key)))
                     {
-                        var bestMatch = opponent.MaxBy(m => CalculateSuitability(m));
+                        var bestMatch = opponent.MaxBy(m => m.Suitability);
                         if (bestMatch is not null)
                         {
                             yield return bestMatch;
@@ -165,26 +224,6 @@ namespace Fumbbl.Gamefinder.Model
                     }
                 }
             }
-        }
-
-        private bool AllowedForBlackbox(Team team)
-        {
-            if (!string.Equals(team.Division, "Competitive"))
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        private bool AllowedForBlackbox(BasicMatch m)
-        {
-            return true;
-        }
-
-        private bool ActivatedForBlackbox(Coach c)
-        {
-            return true;
         }
 
         private int CalculateSuitability(BasicMatch match)
@@ -216,11 +255,6 @@ namespace Fumbbl.Gamefinder.Model
             var rookieProtectionFactor = team1.Season != team2.Season && (team1.Season == 1 || team2.Season == 1) ? 0.8 : 1;
 
             return (int) (suitability * repeatOpponentFactor * rookieProtectionFactor);
-        }
-
-        internal bool IsUserActivated(int coachId)
-        {
-            return true;
         }
     }
 }

@@ -12,13 +12,13 @@ using ModelBasicMatch = Fumbbl.Gamefinder.Model.BasicMatch;
 using ModelMatch = Fumbbl.Gamefinder.Model.Match;
 using ModelTournament= Fumbbl.Gamefinder.Model.Tournament;
 using ModelTvLimit = Fumbbl.Gamefinder.Model.TvLimit;
+using ModelLfgMode = Fumbbl.Gamefinder.Model.LfgMode;
 
 using ApiCoach = Fumbbl.Api.DTO.Coach;
 using ApiRaceLogo = Fumbbl.Api.DTO.RaceLogo;
 using ApiTeam = Fumbbl.Api.DTO.Team;
 using ApiTournament = Fumbbl.Api.DTO.Tournament;
 using ApiTvLimit = Fumbbl.Api.DTO.TvLimit;
-
 
 namespace Fumbbl.Gamefinder.Convert
 {
@@ -107,17 +107,19 @@ namespace Fumbbl.Gamefinder.Convert
                 Tournament = apiTeam?.Tournament?.ToModel(),
                 RulesetId = apiTeam?.RulesetId ?? 0,
                 AllowCrossLeagueMatches = apiTeam?.Options.CrossLeagueMatches ?? false,
-                TvLimit = apiTeam?.TvLimit?.ToModel() ?? new()
+                TvLimit = apiTeam?.TvLimit?.ToModel() ?? new(),
+                LfgMode = (ModelLfgMode) Enum.Parse(typeof(ModelLfgMode), apiTeam?.LfgMode ?? string.Empty)
             };
         }
 
-        public static UiTeam ToUi(this ModelTeam modelTeam)
+        public static UiTeam ToUi(this ModelTeam modelTeam, bool ownTeam)
         {
             return new UiTeam
             {
                 Id = modelTeam.Id,
                 Name = modelTeam.Name,
                 IsLfg = true,
+                LfgMode = ownTeam ? Enum.GetName(typeof(ModelLfgMode), modelTeam.LfgMode) : null,
                 TeamValue = modelTeam.CurrentTeamValue,
                 Division = modelTeam.Division,
                 Coach = modelTeam.Coach.ToUi(),
@@ -187,15 +189,15 @@ namespace Fumbbl.Gamefinder.Convert
 
             return new UiOffer()
             {
-                Team1 = modelBasicMatch.Team1.ToUi(),
-                Team2 = modelBasicMatch.Team2.ToUi(),
+                Team1 = modelBasicMatch.Team1.ToUi(false),
+                Team2 = modelBasicMatch.Team2.ToUi(false),
                 Id = $"{modelBasicMatch.Team1.Id} {modelBasicMatch.Team2.Id}",
                 Lifetime = ModelMatch.DEFAULT_TIMEOUT * 1000,
                 TimeRemaining = match?.TimeUntilReset ?? 0,
                 Visible = !modelBasicMatch.MatchState.IsHidden,
                 LaunchGame = modelBasicMatch.MatchState.TriggerLaunchGame,
                 ClientId = modelBasicMatch.ClientId,
-                SchedulingError = modelBasicMatch.SchedulingError,
+                SchedulingError = modelBasicMatch.SchedulingError ?? String.Empty,
             };
         }
         #endregion

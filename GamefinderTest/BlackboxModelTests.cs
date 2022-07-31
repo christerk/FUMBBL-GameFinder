@@ -22,7 +22,7 @@ namespace GamefinderTest
         }
 
         [Fact]
-        public async void MatchesAreGenerated()
+        public void MatchesAreGenerated()
         {
             var team1 = _fixture.SimpleTeam(1);
             var team2 = _fixture.SimpleTeam(2);
@@ -33,7 +33,7 @@ namespace GamefinderTest
             _model.Graph.Add(team1);
             _model.Graph.Add(team2);
 
-            var matches = await _model.GenerateRound();
+            var matches = _model.ScheduleMatches(new());
             Assert.NotEmpty(matches);
         }
 
