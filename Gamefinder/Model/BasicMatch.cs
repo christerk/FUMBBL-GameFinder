@@ -13,6 +13,7 @@
         public string? SchedulingError { get; set; }
 
         public int? Suitability { get; set; } = null;
+        public bool Paired { get; internal set; }
 
         public BasicMatch(Team team1, Team team2)
         {

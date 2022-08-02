@@ -9,6 +9,8 @@ namespace Fumbbl.Gamefinder.Model
     public class MatchGraph
     {
         private EventQueue _eventQueue;
+        private bool _tickEnabled = true;
+        private ISchedulingContext _schedulingContext;
         private readonly TeamStore _teams;
         private readonly CoachStore _coaches;
         private readonly MatchStore _matches;
@@ -30,7 +32,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private readonly TimeSpan TickTimeout = TimeSpan.FromSeconds(1);
 
-        public MatchGraph(ILoggerFactory loggerFactory, EventQueue eventQueue)
+        public MatchGraph(ILoggerFactory loggerFactory, EventQueue eventQueue, ISchedulingContext context)
         {
             Logger = loggerFactory.CreateLogger<MatchGraph>();
             _teams = new(Logger);
@@ -39,12 +41,21 @@ namespace Fumbbl.Gamefinder.Model
             _dialogManager = new(loggerFactory);
             _eventQueue = eventQueue;
             _eventQueue.Tick += HandleTick;
+            _schedulingContext = context;
+        }
+
+        public void DisableTick()
+        {
+            _tickEnabled = false;
         }
 
         private void HandleTick(object? sender, EventArgs e)
         {
-            Tick();
-            GraphUpdated?.Invoke((object)this, EventArgs.Empty);
+            if (_tickEnabled)
+            {
+                Tick();
+                GraphUpdated?.Invoke((object)this, EventArgs.Empty);
+            }
         }
 
         private void Tick()
@@ -82,6 +93,7 @@ namespace Fumbbl.Gamefinder.Model
 
         public void Reset()
         {
+            Logger.LogDebug("Resetting Graph");
             _dialogManager.Clear();
             _matches.Clear();
             _teams.Clear();
@@ -168,7 +180,7 @@ namespace Fumbbl.Gamefinder.Model
             TeamAdded?.Invoke(this, new TeamUpdatedArgs { Team = team });
             foreach (var opponent in _teams.GetTeams())
             {
-                if (team is not null && team.IsOpponentAllowed(opponent) && !opponent.Coach.Locked)
+                if (team is not null && _schedulingContext.IsOpponentAllowed(team, opponent) && !opponent.Coach.Locked)
                 {
                     var match = new Match(this, opponent, team);
                     _matches.Add(match);

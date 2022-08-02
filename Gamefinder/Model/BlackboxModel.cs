@@ -1,6 +1,8 @@
 ﻿using Fumbbl.Api;
 using Fumbbl.Api.DTO;
+using Fumbbl.Gamefinder.Model.Blackbox;
 using Fumbbl.Gamefinder.Model.Cache;
+using System.Collections.Specialized;
 using System.Diagnostics;
 
 namespace Fumbbl.Gamefinder.Model
@@ -24,6 +26,7 @@ namespace Fumbbl.Gamefinder.Model
         private DateTime _nextActivation = DateTime.MaxValue;
         private DateTime _currentTime = DateTime.Now;
         private Api.DTO.BlackboxStatus? _status;
+        private bool _schedulerEnabled = true;
 
         public DTO.BlackboxStatus Status => (_nextDraw - _currentTime).TotalSeconds < ACTIVE_DURATION * 60 ? DTO.BlackboxStatus.Active : DTO.BlackboxStatus.Paused;
         public int SecondsRemaining => (int) Math.Floor(((_nextDraw > _nextActivation ? _nextActivation : _nextDraw) - _currentTime).TotalSeconds);
@@ -39,7 +42,8 @@ namespace Fumbbl.Gamefinder.Model
             _fumbbl = fumbblApi;
             _eventQueue = new EventQueue(loggerFactory.CreateLogger<EventQueue>());
             _eventQueue.Tick += HandleTick;
-            _matchGraph = new(loggerFactory, _eventQueue);
+            _matchGraph = new(loggerFactory, _eventQueue, new BlackboxContext());
+            _matchGraph.DisableTick();
             _matches = new List<BasicMatch>();
             _currentTime = DateTime.Now;
             RefreshTimes();
@@ -47,8 +51,17 @@ namespace Fumbbl.Gamefinder.Model
             _logger.LogInformation("Blackbox Starting");
         }
 
+        public void DisableScheduler()
+        {
+            _schedulerEnabled = false;
+        }
+
         private void HandleTick(object? sender, EventArgs e)
         {
+            if (!_schedulerEnabled)
+            {
+                return;
+            }
             _currentTime = DateTime.Now;
             if (_currentTime >= _nextActivation)
             {
@@ -83,9 +96,10 @@ namespace Fumbbl.Gamefinder.Model
 
         private void StartActivation()
         {
-            _eventQueue.DispatchAsync(() =>
+            _ = _eventQueue.DispatchAsync(async () =>
             {
                 _logger.LogInformation("Starting Activation");
+                await _fumbbl.Blackbox.startActivationsAsync();
             });
         }
 
@@ -93,11 +107,12 @@ namespace Fumbbl.Gamefinder.Model
         {
             return await _eventQueue.Serialized<List<BasicMatch>>(async (result) =>
             {
-                var roundInfo = new BlackboxSchedulerResult();
+                BlackboxSchedulerResult roundInfo = new();
                 await PopulateMatchGraph(roundInfo);
                 var matches = ScheduleMatches(roundInfo);
                 await _fumbbl.Blackbox.ReportRoundAsync(roundInfo);
                 result.SetResult(matches);
+                _matchGraph.Reset();
             });
         }
 
@@ -134,8 +149,46 @@ namespace Fumbbl.Gamefinder.Model
 
             Stopwatch timer = Stopwatch.StartNew();
             var possibleMatches = GetPossibleMatches().ToList();
-            var bestMatches = GenerateBestMatches(possibleMatches);
-            bestMatches = bestMatches is null ? new List<BasicMatch>() : bestMatches.ToList();
+            _logger.LogInformation($"Possible Matches identified in {timer.ElapsedMilliseconds}ms");
+
+            Dictionary<int, List<BasicMatch>> grouped = new();
+            foreach (var m in possibleMatches)
+            {
+                int c1 = m.Team1.Coach.Id;
+                int c2 = m.Team2.Coach.Id;
+                if (!grouped.ContainsKey(c1)) { grouped.Add(c1, new List<BasicMatch>()); }
+                if (!grouped.ContainsKey(c2)) { grouped.Add(c2, new()); }
+
+                grouped[c1].Add(m);
+                grouped[c2].Add(m);
+            }
+
+            var heuristics = new List<ISchedulerHeuristic>()
+            {
+                new FewestOpponentsHeuristic(),
+                new MostOpponentsHeuristic(),
+                new FewestGamesHeuristic(),
+                new MostGamesHeuristic(),
+                new HighestSuitabilityHeuristic(),
+                new LowestSuitabilityHeuristic()
+            };
+
+            List<BasicMatch> bestMatches = new();
+            int bestSuitability = 0;
+            ISchedulerHeuristic? bestHeuristic = null;
+            foreach (var heuristic in heuristics)
+            {
+                heuristic.PreProcess(grouped);
+                var candidateMatches = GenerateBestMatches(heuristic, grouped, new HashSet<int>());
+
+                var sumSuitability = candidateMatches?.Sum(m => m.Suitability) ?? 0;
+                if (sumSuitability > bestSuitability && candidateMatches != null)
+                {
+                    bestHeuristic = heuristic;
+                    bestMatches = candidateMatches;
+                    bestSuitability = sumSuitability;
+                }
+            }
             timer.Stop();
 
             _logger.LogInformation($"Generated round in {timer.ElapsedMilliseconds}ms");
@@ -153,6 +206,8 @@ namespace Fumbbl.Gamefinder.Model
                 Suitability = m.Suitability ?? 0
             }));
 
+            roundInfo.Heuristic = bestHeuristic?.GetType().Name;
+
             return bestMatches;
         }
 
@@ -160,34 +215,37 @@ namespace Fumbbl.Gamefinder.Model
         {
             return string.Equals(t.Division, "Competitive")
                 && (t.LfgMode == LfgMode.Mixed || t.LfgMode == LfgMode.Strict)
-                && t.Tournament?.Opponents.Any() != null;
+                && (t.Tournament?.Opponents.Any() is null);
         }
 
-        private List<BasicMatch>? GenerateBestMatches(List<BasicMatch> possibleMatches)
+        private List<BasicMatch>? GenerateBestMatches(ISchedulerHeuristic heuristic, Dictionary<int, List<BasicMatch>> possibleMatches, HashSet<int> pairedCoaches, bool top = true)
         {
-            var maxSuitability = -1;
-            List<BasicMatch>? bestMatches = null;
-            for (int i=0; i < possibleMatches.Count; i++)
-            {
-                var potentialMatch = possibleMatches[i];
-                var remainingMatches = possibleMatches.Where(m => !CoachesCollide(potentialMatch, m)).ToList();
-                var bestSubset = GenerateBestMatches(remainingMatches);
-                if (bestSubset is not null)
-                {
-                    var suitability = bestSubset.Sum(m => CalculateSuitability(m)) + CalculateSuitability(potentialMatch);
+            var processingOrder = heuristic.GenerateProcessingOrder(possibleMatches);
 
-                    if (suitability > maxSuitability)
-                    {
-                        bestMatches = bestSubset;
-                        bestMatches.Add(potentialMatch);
-                    }
-                }
-                else
+            List<BasicMatch> bestMatches = new List<BasicMatch>();
+            for (var cIndex = 0; cIndex < processingOrder.Count; cIndex++)
+            {
+                var matchList = possibleMatches[processingOrder[cIndex]];
+                BasicMatch? selectedMatch = null;
+                for (int i=0; i<matchList.Count; i++)
                 {
-                    bestMatches = new() { potentialMatch };
+                    var match = matchList[i];
+                    if (pairedCoaches.Contains(match.Team1.Coach.Id) || pairedCoaches.Contains(match.Team2.Coach.Id))
+                    {
+                        continue;
+                    }
+
+                    selectedMatch = match;
+                    break;
+                }
+
+                if (selectedMatch != null)
+                {
+                    pairedCoaches.Add(selectedMatch.Team1.Coach.Id);
+                    pairedCoaches.Add(selectedMatch.Team2.Coach.Id);
+                    bestMatches.Add(selectedMatch);
                 }
             }
-
             return bestMatches;
         }
 
@@ -228,7 +286,15 @@ namespace Fumbbl.Gamefinder.Model
 
         private int CalculateSuitability(BasicMatch match)
         {
-            return CalculateSuitability(match.Team1, match.Team2);
+
+            var suitability = match.Suitability;
+
+            if (suitability is null)
+            {
+                suitability = CalculateSuitability(match.Team1, match.Team2);
+            }
+
+            return suitability ?? 0;
         }
 
         private int CalculateSuitability(Team team1, Team team2)

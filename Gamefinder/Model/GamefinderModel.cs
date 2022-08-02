@@ -15,7 +15,7 @@ namespace Fumbbl.Gamefinder.Model
         public GamefinderModel(EventQueue eventQueue, ILoggerFactory loggerFactory, FumbblApi fumbblApi)
         {
             _eventQueue = eventQueue;
-            _matchGraph = new MatchGraph(loggerFactory, eventQueue);
+            _matchGraph = new MatchGraph(loggerFactory, eventQueue, new GamefinderContext());
             _matchGraph.MatchLaunched += MatchLaunched;
             _logger = loggerFactory.CreateLogger<GamefinderModel>();
             _fumbbl = fumbblApi;

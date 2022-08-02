@@ -32,6 +32,7 @@ namespace GamefinderTest
 #pragma warning disable CS8604 // Possible null reference argument.
             GamefinderModel = new(queue, LoggerFactory, null);
             BlackboxModel = new(LoggerFactory, null);
+            BlackboxModel.DisableScheduler();
 #pragma warning restore CS8604 // Possible null reference argument.
 #pragma warning restore CS8625 // Cannot convert null literal to non-nullable reference type.
 
@@ -53,7 +54,7 @@ namespace GamefinderTest
 
         public Coach CreateCoach(int id)
         {
-            return new Coach() { Id = id, Name = $"Coach {id}" };
+            return new Coach() { Id = id, Name = $"Coach {id}", CanLfg = true };
         }
 
         public Team SimpleTeam(int teamId, Coach? coach = null, int teamValue = 1000000)
@@ -62,7 +63,7 @@ namespace GamefinderTest
             {
                 coach = CreateCoach(teamId);
             }
-            var team = new Team(coach) { Id = teamId, Name = $"Team {teamId}", SchedulingTeamValue = teamValue, Status="Active" };
+            var team = new Team(coach) { Id = teamId, Name = $"Team {teamId}", SchedulingTeamValue = teamValue, Status="Active", Division="Competitive" };
 
             return team;
         }
