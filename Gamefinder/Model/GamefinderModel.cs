@@ -79,6 +79,14 @@ namespace Fumbbl.Gamefinder.Model
             });
         }
 
+        internal async Task LaunchBlackboxGame(BasicMatch match)
+        {
+            await _eventQueue.DispatchAsync(() =>
+            {
+                _matchGraph.InjectLaunchedMatch(match);
+            });
+        }
+
         public async Task<object> GetDebugData()
         {
             return await _eventQueue.Serialized<object>((result) =>

@@ -106,5 +106,11 @@
                 }
             }
         }
+
+        internal void ForceLaunch()
+        {
+            MatchState.ForceLaunch();
+            _resetTimestamp = DateTime.Now.AddSeconds(GetTimeout(MatchState));
+        }
     }
 }

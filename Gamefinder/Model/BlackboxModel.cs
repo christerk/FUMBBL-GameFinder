@@ -2,6 +2,7 @@
 using Fumbbl.Api.DTO;
 using Fumbbl.Gamefinder.Model.Blackbox;
 using Fumbbl.Gamefinder.Model.Cache;
+using Fumbbl.Gamefinder.Model.Event;
 using System.Collections.Specialized;
 using System.Diagnostics;
 
@@ -27,6 +28,8 @@ namespace Fumbbl.Gamefinder.Model
         private DateTime _currentTime = DateTime.Now;
         private Api.DTO.BlackboxStatus? _status;
         private bool _schedulerEnabled = true;
+
+        public event EventHandler? MatchesScheduled;
 
         public DTO.BlackboxStatus Status => (_nextDraw - _currentTime).TotalSeconds < ACTIVE_DURATION * 60 ? DTO.BlackboxStatus.Active : DTO.BlackboxStatus.Paused;
         public int SecondsRemaining => (int) Math.Floor(((_nextDraw > _nextActivation ? _nextActivation : _nextDraw) - _currentTime).TotalSeconds);
@@ -111,6 +114,7 @@ namespace Fumbbl.Gamefinder.Model
                 await PopulateMatchGraph(roundInfo);
                 var matches = ScheduleMatches(roundInfo);
                 await _fumbbl.Blackbox.ReportRoundAsync(roundInfo);
+                MatchesScheduled?.Invoke(this, new MatchesScheduledArgs(matches));
                 result.SetResult(matches);
                 _matchGraph.Reset();
             });

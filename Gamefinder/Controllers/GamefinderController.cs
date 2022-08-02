@@ -9,6 +9,7 @@ using StateDto = Fumbbl.Gamefinder.DTO.State;
 using BlackboxConfigDto = Fumbbl.Gamefinder.DTO.BlackboxConfig;
 using BlackboxStateDto = Fumbbl.Gamefinder.DTO.BlackboxState;
 using Fumbbl.Gamefinder.Model.Cache;
+using Fumbbl.Gamefinder.Model.Event;
 
 namespace Fumbbl.Gamefinder.Controllers
 {
@@ -31,6 +32,17 @@ namespace Fumbbl.Gamefinder.Controllers
             _coachCache = coachCache;
             _teamCache = teamCache;
             _blackbox = blackbox;
+            _blackbox.MatchesScheduled += MatchesScheduled;
+        }
+
+        private void MatchesScheduled(object? sender, EventArgs args)
+        {
+            if (args is MatchesScheduledArgs e && e?.Matches is not null) {
+                foreach (var match in e.Matches)
+                {
+                    _model.LaunchBlackboxGame(match);
+                }
+            }
         }
 
         [HttpPost("Activate")]

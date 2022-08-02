@@ -100,6 +100,14 @@ namespace Fumbbl.Gamefinder.Model
             _coaches.Clear();
         }
 
+        internal void InjectLaunchedMatch(BasicMatch match)
+        {
+            var injectedMatch = new Match(this, match.Team1, match.Team2);
+            injectedMatch.ForceLaunch();
+            injectedMatch.ClientId = -1;
+            _matches.Add(injectedMatch);
+        }
+
         private void GetStartDialogMatch(Coach coach, TaskCompletionSource<BasicMatch?> result)
         {
             result.SetResult(_dialogManager.GetActiveDialog(coach));

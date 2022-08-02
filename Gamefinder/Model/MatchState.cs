@@ -66,5 +66,10 @@
 
             return true;
         }
+
+        internal void ForceLaunch()
+        {
+            (State1, State2) = (TeamState.Start, TeamState.Start);
+        }
     }
 }
