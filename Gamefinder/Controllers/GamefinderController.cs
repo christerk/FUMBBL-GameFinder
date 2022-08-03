@@ -82,9 +82,16 @@ namespace Fumbbl.Gamefinder.Controllers
             foreach (var (coach, coachTeams) in data)
             {
                 var opponent = coach.ToOpponent();
-                opponent.Teams = coachTeams.Select(team => team.ToUi(coachId == team.Coach.Id));
-                teams.Add(opponent);
+                opponent.Teams = coachTeams
+                    .Where(team => coachId == coach.Id || team.LfgMode != LfgMode.Strict)
+                    .Select(team => team.ToUi(coachId == coach.Id));
+                if (opponent.Teams.Count() > 0 || coachId == coach.Id)
+                {
+                    // Only add the coach to the result if there are teams remaining to be shown
+                    teams.Add(opponent);
+                }
             }
+
             state.Teams = teams;
 
             // Fill Matches
