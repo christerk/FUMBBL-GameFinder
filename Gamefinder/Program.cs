@@ -1,8 +1,28 @@
 using Fumbbl.Api;
 using Fumbbl.Gamefinder.Model;
 using Fumbbl.Gamefinder.Model.Cache;
+using Serilog;
+
+Log.Logger = new LoggerConfiguration()
+    .WriteTo.Console()
+    .CreateBootstrapLogger();
+
+Log.Information("Starting Gamefinder");
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Host.UseSerilog((context, config) =>
+{
+    config
+        .WriteTo.Console()
+        .WriteTo.File(
+            path: "logs/gamefinder-.log",
+            rollingInterval: RollingInterval.Day,
+            retainedFileCountLimit: 5
+        )
+        .ReadFrom.Configuration(context.Configuration)
+    ;
+});
 
 // Add services to the container.
 
@@ -16,6 +36,7 @@ builder.Services.AddSingleton<GamefinderModel>();
 builder.Services.AddSingleton<BlackboxModel>();
 builder.Services.AddSingleton<CoachCache>();
 builder.Services.AddSingleton<TeamCache>();
+
 
 var app = builder.Build();
 

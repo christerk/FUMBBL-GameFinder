@@ -45,7 +45,7 @@ namespace GamefinderVisualizer
         private readonly Random r = new();
         private int cNum = 0, tNum = 0;
 
-        private async Task Simulate()
+        private void Simulate()
         {
             var maxCoaches = 5;
             var addCoach = coaches.Count < maxCoaches || r.Next(0, 20) == 0;
@@ -127,7 +127,7 @@ namespace GamefinderVisualizer
                 while (true)
                 {
                     Thread.Sleep(1000);
-                    await Simulate();
+                    Simulate();
                 }
             });
         }

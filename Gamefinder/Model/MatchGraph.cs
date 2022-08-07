@@ -106,6 +106,7 @@ namespace Fumbbl.Gamefinder.Model
             injectedMatch.ForceLaunch();
             injectedMatch.ClientId = -1;
             _matches.Add(injectedMatch);
+            Logger.LogDebug($"Injecting {injectedMatch} with timeout set to {injectedMatch.TimeUntilReset}ms");
         }
 
         private void GetStartDialogMatch(Coach coach, TaskCompletionSource<BasicMatch?> result)
@@ -208,6 +209,11 @@ namespace Fumbbl.Gamefinder.Model
 
             foreach (var match in _matches.GetMatches(team))
             {
+                if (match.MatchState.TriggerLaunchGame)
+                {
+                    // Don't remove games marked for launching, they will be removed separately.
+                    continue;
+                }
                 var t = match.GetOpponent(team);
                 if (t is not null)
                 {

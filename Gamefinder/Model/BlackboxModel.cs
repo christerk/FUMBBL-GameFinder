@@ -15,6 +15,7 @@ namespace Fumbbl.Gamefinder.Model
 
         private ILogger<BlackboxModel> _logger;
         private FumbblApi _fumbbl;
+        private GamefinderModel _gamefinder;
         private EventQueue _eventQueue;
         private readonly MatchGraph _matchGraph;
         private List<BasicMatch> _matches;
@@ -29,8 +30,6 @@ namespace Fumbbl.Gamefinder.Model
         private Api.DTO.BlackboxStatus? _status;
         private bool _schedulerEnabled = true;
 
-        public event EventHandler? MatchesScheduled;
-
         public DTO.BlackboxStatus Status => (_nextDraw - _currentTime).TotalSeconds < ACTIVE_DURATION * 60 ? DTO.BlackboxStatus.Active : DTO.BlackboxStatus.Paused;
         public int SecondsRemaining => (int) Math.Floor(((_nextDraw > _nextActivation ? _nextActivation : _nextDraw) - _currentTime).TotalSeconds);
         public BlackboxStatus BlackboxStatus => _status ?? new();
@@ -39,10 +38,11 @@ namespace Fumbbl.Gamefinder.Model
         public DateTime NextDraw => _nextDraw;
         public DateTime NextActivation => _nextActivation;
 
-        public BlackboxModel(ILoggerFactory loggerFactory, FumbblApi fumbblApi)
+        public BlackboxModel(ILoggerFactory loggerFactory, FumbblApi fumbblApi, GamefinderModel gamefinder)
         {
             _logger = loggerFactory.CreateLogger<BlackboxModel>();
             _fumbbl = fumbblApi;
+            _gamefinder = gamefinder;
             _eventQueue = new EventQueue(loggerFactory.CreateLogger<EventQueue>());
             _eventQueue.Tick += HandleTick;
             _matchGraph = new(loggerFactory, _eventQueue, new BlackboxContext());
@@ -114,10 +114,18 @@ namespace Fumbbl.Gamefinder.Model
                 await PopulateMatchGraph(roundInfo);
                 var matches = ScheduleMatches(roundInfo);
                 await _fumbbl.Blackbox.ReportRoundAsync(roundInfo);
-                MatchesScheduled?.Invoke(this, new MatchesScheduledArgs(matches));
+                InjectMatches(matches);
                 result.SetResult(matches);
                 _matchGraph.Reset();
             });
+        }
+
+        private void InjectMatches(List<BasicMatch> matches)
+        {
+            foreach (var match in matches)
+            {
+                _ = _gamefinder.LaunchBlackboxGame(match);
+            }
         }
 
         private async Task PopulateMatchGraph(BlackboxSchedulerResult roundInfo)
@@ -304,9 +312,8 @@ namespace Fumbbl.Gamefinder.Model
         private int CalculateSuitability(Team team1, Team team2)
         {
             // Calculate normalized TV difference
-            var tvMin = (double) Math.Min(team1.SchedulingTeamValue, team2.SchedulingTeamValue);
-            var tvMax = (double) Math.Max(team1.SchedulingTeamValue, team2.SchedulingTeamValue);
-            var deltaTV = 1000 * (tvMax / tvMin - 1);
+            var (tvMin, tvMax) = MinMax(team1.SchedulingTeamValue, team2.SchedulingTeamValue);
+            var deltaTV = Normalize(tvMin, tvMax);
 
             // Amplify TV delta
             deltaTV = deltaTV <= 50 ? deltaTV : deltaTV * 3 - 100;
@@ -321,10 +328,33 @@ namespace Fumbbl.Gamefinder.Model
 
             // Calculate suitability
             var suitability = 1000 * (1 - distance);
+
+            // Calculate scaling factors
+            var (ctvMin, ctvMax) = MinMax(team1.CurrentTeamValue, team2.CurrentTeamValue);
+            var deltaCTV = (ctvMax - ctvMin) / 1000;
+
+            // 1 for 100k, 0.5 for 350k
+            var ctvFactor = deltaCTV > 100 ? 1 - (deltaCTV-100) / 500 : 1;
+            ctvFactor = ctvFactor < 0.5 ? 0.5 : ctvFactor;
+
             var repeatOpponentFactor = (team1.LastOpponent == team2.Coach.Id || team2.LastOpponent == team1.Coach.Id) ? 0.9 : 1;
             var rookieProtectionFactor = team1.Season != team2.Season && (team1.Season == 1 || team2.Season == 1) ? 0.8 : 1;
 
-            return (int) (suitability * repeatOpponentFactor * rookieProtectionFactor);
+            // Return final suitability score
+            return (int) (suitability * ctvFactor * repeatOpponentFactor * rookieProtectionFactor);
+        }
+
+        private (double,double) MinMax(int a, int b)
+        {
+            var min = Math.Min(a, b);
+            var max = Math.Max(a, b);
+
+            return (min, max);
+        }
+
+        private double Normalize(double min, double max)
+        {
+            return 1000 * (max / min - 1);
         }
     }
 }

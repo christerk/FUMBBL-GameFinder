@@ -126,7 +126,7 @@ namespace Fumbbl.Gamefinder.Convert
                 League = new UiLeague { Id = modelTeam.LeagueId, Name = modelTeam.LeagueName },
                 Roster = new UiRoster(modelTeam.Roster, modelTeam.RosterLogo32, modelTeam.RosterLogo64),
                 SeasonInfo = new UiSeasonInfo { CurrentSeason = modelTeam.Season, GamesPlayedInCurrentSeason = modelTeam.SeasonGames },
-                IsInTournament = modelTeam.Tournament?.Opponents.Any() != null
+                IsInTournament = modelTeam.Tournament?.Id > 0
             };
         }
 

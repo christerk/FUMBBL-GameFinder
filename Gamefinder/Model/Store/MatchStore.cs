@@ -75,7 +75,10 @@ namespace Fumbbl.Gamefinder.Model.Store
                 var matches = _teamMatches[team].ToList();
                 foreach (var match in matches)
                 {
-                    Remove(match);
+                    if (!match.MatchState.TriggerLaunchGame)
+                    {
+                        Remove(match);
+                    }
                 }
             }
         }

@@ -99,9 +99,11 @@
                     _owningGraph.Logger.LogDebug($"Removing started match {this}");
                     _owningGraph.Remove(Team1.Coach);
                     _owningGraph.Remove(Team2.Coach);
+                    _owningGraph.Remove(this);
                 }
                 else if (!_matchState.IsDefault)
                 {
+                    _owningGraph.Logger.LogDebug($"Timing out {this}");
                     Act(TeamAction.Timeout);
                 }
             }

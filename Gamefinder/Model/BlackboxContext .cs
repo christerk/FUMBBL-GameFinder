@@ -29,12 +29,24 @@
                 return false;
             }
 
+            if (team.SchedulingTeamValue == 0 || opponent.SchedulingTeamValue == 0)
+            {
+                return false;
+            }
+
             if (!team.TvLimit.IsWithinRange(opponent.SchedulingTeamValue) || !opponent.TvLimit.IsWithinRange(team.SchedulingTeamValue))
             {
                 return false;
             }
 
-            if (team.SchedulingTeamValue == 0 || opponent.SchedulingTeamValue == 0)
+            if (
+                Math.Abs(team.CurrentTeamValue - opponent.CurrentTeamValue) > 350000
+                &&
+                (
+                    (team.Season == 1 || opponent.Season == 1) ||
+                    (team.SeasonGames >= 15 || opponent.SeasonGames >= 15)
+                )
+            )
             {
                 return false;
             }
