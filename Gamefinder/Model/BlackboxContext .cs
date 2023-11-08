@@ -51,6 +51,14 @@
                 return false;
             }
 
+            var teamVirtualFirstSeason = team.SeasonGames < 15;
+            var opponentVirtualFirstSeason = opponent.SeasonGames < 15;
+
+            if (teamVirtualFirstSeason != opponentVirtualFirstSeason)
+            {
+                return false;
+            }
+
             if (team.Tournament?.Id < 0 || opponent.Tournament?.Id < 0)
             {
                 return false;

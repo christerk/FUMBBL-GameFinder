@@ -38,6 +38,7 @@ namespace Fumbbl.Gamefinder.Model.Store
 
         internal void Add(BasicMatch match)
         {
+            _logger.LogDebug($"MatchStore Add({match})");
             _matches.Add(match);
             AddMatch(match.Team1, match);
             AddMatch(match.Team2, match);
@@ -45,6 +46,7 @@ namespace Fumbbl.Gamefinder.Model.Store
 
         internal bool Remove(BasicMatch match)
         {
+            _logger.LogDebug($"MatchStore Remove({match})");
             RemoveMatch(match.Team1, match);
             RemoveMatch(match.Team2, match);
             return _matches.TryRemove(match);

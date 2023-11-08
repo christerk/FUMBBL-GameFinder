@@ -3,6 +3,7 @@
     public enum BlackboxStatus
     {
         Active,
+        Pending,
         Paused,
         Offline
     }

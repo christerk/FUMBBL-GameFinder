@@ -30,7 +30,7 @@ namespace Fumbbl.Gamefinder.Model
         private Api.DTO.BlackboxStatus? _status;
         private bool _schedulerEnabled = true;
 
-        public DTO.BlackboxStatus Status => (_nextDraw - _currentTime).TotalSeconds < ACTIVE_DURATION * 60 ? DTO.BlackboxStatus.Active : DTO.BlackboxStatus.Paused;
+        public DTO.BlackboxStatus Status = DTO.BlackboxStatus.Offline;
         public int SecondsRemaining => (int) Math.Floor(((_nextDraw > _nextActivation ? _nextActivation : _nextDraw) - _currentTime).TotalSeconds);
         public BlackboxStatus BlackboxStatus => _status ?? new();
 
@@ -50,6 +50,7 @@ namespace Fumbbl.Gamefinder.Model
             _matches = new List<BasicMatch>();
             _currentTime = DateTime.Now;
             RefreshTimes();
+            Status = _nextDraw < _nextActivation ? DTO.BlackboxStatus.Active : DTO.BlackboxStatus.Paused;
             _eventQueue.Start();
             _logger.LogInformation("Blackbox Starting");
         }
@@ -63,16 +64,19 @@ namespace Fumbbl.Gamefinder.Model
         {
             if (!_schedulerEnabled)
             {
+                Status = DTO.BlackboxStatus.Offline;
                 return;
             }
             _currentTime = DateTime.Now;
             if (_currentTime >= _nextActivation)
             {
                 StartActivation();
+                Status = DTO.BlackboxStatus.Active;
                 RefreshTimes();
             }
             if (_currentTime >= _nextDraw)
             {
+                Status = DTO.BlackboxStatus.Pending;
                 _ = GenerateRound();
                 RefreshTimes();
             }
@@ -110,6 +114,7 @@ namespace Fumbbl.Gamefinder.Model
         {
             return await _eventQueue.Serialized<List<BasicMatch>>(async (result) =>
             {
+                Status = DTO.BlackboxStatus.Pending;
                 BlackboxSchedulerResult roundInfo = new();
                 await PopulateMatchGraph(roundInfo);
                 var matches = ScheduleMatches(roundInfo);
@@ -117,6 +122,7 @@ namespace Fumbbl.Gamefinder.Model
                 InjectMatches(matches);
                 result.SetResult(matches);
                 _matchGraph.Reset();
+                Status = DTO.BlackboxStatus.Paused;
             });
         }
 
