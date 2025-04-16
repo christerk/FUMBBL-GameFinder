@@ -59,6 +59,12 @@
                 return false;
             }
 
+            if ((team.Season == 1) != (opponent.Season == 1))
+            {
+                // Real first season check
+                return false;
+            }
+
             if (team.Tournament?.Id < 0 || opponent.Tournament?.Id < 0)
             {
                 return false;
