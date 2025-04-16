@@ -9,7 +9,7 @@
                 return false;
             }
 
-            if (Equals(team.Coach, opponent.Coach))
+            if (team.Coach.Equals(opponent.Coach))
             {
                 return false;
             }
@@ -39,13 +39,15 @@
                 return false;
             }
 
+            if ((team.Season == 1) != (opponent.Season == 1))
+            {
+                // Real first season check
+                return false;
+            }
+
             if (
                 Math.Abs(team.CurrentTeamValue - opponent.CurrentTeamValue) > 350000
-                &&
-                (
-                    (team.Season == 1 || opponent.Season == 1) ||
-                    (team.SeasonGames >= 15 || opponent.SeasonGames >= 15)
-                )
+                && team.Season == 1 && opponent.Season == 1
             )
             {
                 return false;
@@ -56,12 +58,6 @@
 
             if (teamVirtualFirstSeason != opponentVirtualFirstSeason)
             {
-                return false;
-            }
-
-            if ((team.Season == 1) != (opponent.Season == 1))
-            {
-                // Real first season check
                 return false;
             }
 
